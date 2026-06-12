@@ -345,7 +345,7 @@ export default function App() {
   const handleSignOut = async () => { await supabase.auth.signOut(); setSession(null); setIsAdmin(false); };
   const currentMod = MODULES.find(m => m.id === activeModule)!;
 
-  if (showAdmin && isAdmin) return <AdminDashboard onBack={() => setShowAdmin(false)} />;
+  if (showAdmin && isAdmin) return <AdminDashboard userId={session?.user?.id} onLogout={handleSignOut} />;
 
   // ─────────────────────────────────────────────────────────────────────────
   // RENDER

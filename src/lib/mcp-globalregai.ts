@@ -533,7 +533,7 @@ export const emaTools = {
  */
 export function detectRequiredMCPs(
   query: string,
-  _language: string,
+  language: string,
   country: string,
   industry: string
 ): string[] {
@@ -606,7 +606,7 @@ export async function callMCPTool(
  */
 export async function integrateMultipleMCPs(
   query: string,
-  _language: string,
+  language: string,
   country: string,
   industry: string
 ): Promise<Record<string, any>> {
@@ -648,7 +648,7 @@ export async function integrateMultipleMCPs(
  */
 export function formatMCPResponse(
   mcpResults: Record<string, any>,
-  _language: string
+  language: string
 ): string {
   if (Object.keys(mcpResults).length === 0) {
     return "규제 데이터를 조회할 수 없습니다.";

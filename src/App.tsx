@@ -135,6 +135,11 @@ const DOCUMENT_TEMPLATES = [
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
+// GEMINI KEY ROTATION
+// ─────────────────────────────────────────────────────────────────────────────
+let geminiKeyIndex = 0;
+
+// ─────────────────────────────────────────────────────────────────────────────
 // HELPERS
 // ─────────────────────────────────────────────────────────────────────────────
 function getGuestCount() { return parseInt(localStorage.getItem(GUEST_COUNT_KEY) || '0', 10); }
@@ -448,7 +453,7 @@ export default function App() {
       setMessages(p => [...p, { role: 'assistant', content: reply, timestamp: new Date() }]);
 
       if (!session && !isDeveloper) { const n = incrementGuestCount(); setGuestCount(n); }
-      if (session) await logUsage(session.user.id, activeModule, text, reply, 0);
+      if (session) await logUsage(session.user.id, text, reply, 0, 0);
 
     } catch {
       setMessages(p => [...p, { role: 'assistant', content: '⚠️ Connection error. Please try again.', timestamp: new Date() }]);

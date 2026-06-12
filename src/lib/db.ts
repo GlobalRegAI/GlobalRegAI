@@ -1,4 +1,4 @@
-import { supabase } from './supabase';
+﻿import { supabase } from './supabase';
 
 // ============================================
 // Users & Trial Management
@@ -190,7 +190,7 @@ export async function getDashboardStats() {
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
-    const { count: activeUsers } = await supabase
+    const { count: _activeUsers } = await supabase
       .from('usage_logs')
       .select('user_id', { count: 'exact', head: true })
       .gt('created_at', sevenDaysAgo.toISOString());

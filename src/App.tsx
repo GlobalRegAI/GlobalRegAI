@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
   Send, Globe, Sun, Moon, Search, Layers, ShieldAlert,
   FileText, Activity, Box, FileCheck, Users, LogOut,
@@ -133,22 +133,6 @@ const DOCUMENT_TEMPLATES = [
   { id: 'sds',    label: 'Safety Data Sheet (GHS)',           agency: 'OECD' },
   { id: 'mfds_k', label: 'MFDS 품목허가 신청서',               agency: 'MFDS' },
 ];
-
-// ─────────────────────────────────────────────────────────────────────────────
-// GEMINI KEY ROTATION — 3개 키 자동 순환
-// ─────────────────────────────────────────────────────────────────────────────
-let geminiKeyIndex = 0;
-function getGeminiKey(): string {
-  const keys = [
-    import.meta.env.VITE_GEMINI_API_KEY_1,
-    import.meta.env.VITE_GEMINI_API_KEY_2,
-    import.meta.env.VITE_GEMINI_API_KEY_3,
-  ].filter(Boolean);
-  if (keys.length === 0) return import.meta.env.VITE_GEMINI_API_KEY || "";
-  const key = keys[geminiKeyIndex % keys.length];
-  geminiKeyIndex++;
-  return key;
-}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // HELPERS
@@ -398,56 +382,73 @@ export default function App() {
         { role: 'user', parts: [{ text: text + fileCtx }] },
       ];
 
-      const geminiRes = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${getGeminiKey()}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: geminiContents,
-            generationConfig: {
-              maxOutputTokens: 2048,
-              temperature: 0.2,
-              topP: 0.8,
-              topK: 40,
-            },
-            safetySettings: [
-              { category: 'HARM_CATEGORY_HARASSMENT',        threshold: 'BLOCK_NONE' },
-              { category: 'HARM_CATEGORY_HATE_SPEECH',       threshold: 'BLOCK_NONE' },
-              { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_NONE' },
-              { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_NONE' },
-            ],
-          }),
-        }
-      );
+      // ── Gemini API — 3키 자동 로테이션 + 429시 다음 키로 재시도 ──
+      const GEMINI_BODY = {
+        contents: geminiContents,
+        generationConfig: { maxOutputTokens: 2048, temperature: 0.2, topP: 0.8, topK: 40 },
+        safetySettings: [
+          { category: 'HARM_CATEGORY_HARASSMENT',        threshold: 'BLOCK_NONE' },
+          { category: 'HARM_CATEGORY_HATE_SPEECH',       threshold: 'BLOCK_NONE' },
+          { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_NONE' },
+          { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_NONE' },
+        ],
+      };
 
-      const geminiData = await geminiRes.json();
+      // 사용 가능한 키 목록 수집
+      const availableKeys = [
+        import.meta.env.VITE_GEMINI_API_KEY_1,
+        import.meta.env.VITE_GEMINI_API_KEY_2,
+        import.meta.env.VITE_GEMINI_API_KEY_3,
+        import.meta.env.VITE_GEMINI_API_KEY_4,
+        import.meta.env.VITE_GEMINI_API_KEY_5,
+        import.meta.env.VITE_GEMINI_API_KEY,
+      ].filter((k): k is string => Boolean(k) && k.startsWith('AIza'));
 
-      // ── 응답 검증 및 추출 ──
+      let geminiData: any = null;
+      let lastError = '';
+
+      // 각 키로 순서대로 시도 — 429면 다음 키로 넘어감
+      for (let i = 0; i < availableKeys.length; i++) {
+        const keyToUse = availableKeys[(geminiKeyIndex + i) % availableKeys.length];
+        const res = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${keyToUse}`,
+          { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(GEMINI_BODY) }
+        );
+        geminiData = await res.json();
+        if (!geminiData.error) { geminiKeyIndex = (geminiKeyIndex + i + 1) % availableKeys.length; break; }
+        lastError = geminiData.error.message || '';
+        const is429 = lastError.includes('429') || lastError.includes('RESOURCE_EXHAUSTED') || lastError.includes('TooManyRequests') || lastError.includes('quota');
+        if (!is429) break; // 429가 아닌 오류면 재시도 불필요
+        // 429면 다음 키로 계속
+      }
+
+      // ── 응답 처리 ──
       let reply = '';
-      if (geminiData.candidates?.[0]?.content?.parts?.[0]?.text) {
+      if (geminiData?.candidates?.[0]?.content?.parts?.[0]?.text) {
         reply = geminiData.candidates[0].content.parts[0].text;
-        // 너무 짧은 응답 보완
         if (reply.length < 80) {
-          reply += '\n\n*For comprehensive guidance, please provide more details about your product type, target market, and specific regulatory question.*';
+          reply += '\n\n*For more detailed guidance, please specify your product type, target market, and regulatory pathway.*';
         }
-      } else if (geminiData.error) {
-        const errMsg = geminiData.error.message || 'Unknown error';
-        if (errMsg.includes('quota') || errMsg.includes('limit') || errMsg.includes('RESOURCE_EXHAUSTED')) {
-          reply = '⚠️ **Daily free usage limit reached.** GlobalRegAI will resume tomorrow. Thank you for using the service.';
+      } else if (geminiData?.error) {
+        const errMsg = geminiData.error.message || '';
+        const is429 = errMsg.includes('429') || errMsg.includes('RESOURCE_EXHAUSTED') || errMsg.includes('TooManyRequests') || errMsg.includes('quota');
+        if (is429) {
+          reply = '⚠️ **All API keys are temporarily rate-limited.** Please wait a few minutes and try again.';
         } else if (errMsg.includes('API_KEY') || errMsg.includes('invalid')) {
-          reply = '⚠️ **Service configuration error.** Please contact the administrator at uk.dscheon@gmail.com.';
+          reply = '⚠️ **Configuration error.** Please contact: uk.dscheon@gmail.com';
+        } else if (errMsg.includes('not found') || errMsg.includes('404')) {
+          reply = '⚠️ **Model not available.** Please contact: uk.dscheon@gmail.com';
         } else {
-          reply = `⚠️ **Temporary service issue.** Please try again in a moment. (${errMsg})`;
+          reply = `⚠️ **Service issue.** Please try again. (${errMsg.substring(0, 100)})`;
         }
       } else {
-        reply = '⚠️ No response received. Please rephrase your question and try again.';
+        reply = '⚠️ No response received. Please rephrase your question.';
       }
 
       setMessages(p => [...p, { role: 'assistant', content: reply, timestamp: new Date() }]);
 
       if (!session && !isDeveloper) { const n = incrementGuestCount(); setGuestCount(n); }
-      if (session) await logUsage(session.user.id, text, reply, 0, 0);
+      if (session) await logUsage(session.user.id, activeModule, text, reply, 0);
 
     } catch {
       setMessages(p => [...p, { role: 'assistant', content: '⚠️ Connection error. Please try again.', timestamp: new Date() }]);

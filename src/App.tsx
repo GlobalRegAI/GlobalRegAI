@@ -1,14 +1,13 @@
-
 import { useState, useEffect, useRef } from 'react';
 import {
-  Send, Database, Activity, LogOut, Globe, Sun, Moon,
-  Search, Layers, ShieldAlert, FileText, Clock, Box,
-  Bell, Users, FileCheck, Share2, Paperclip, QrCode
+  Send, Globe, Sun, Moon, Search, Layers, ShieldAlert,
+  FileText, Activity, Box, FileCheck, Users, LogOut,
+  Database, Paperclip, Clock, ChevronDown, ChevronRight,
+  AlertCircle, CheckCircle, Share2, Download, Filter
 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import Auth from './components/Auth';
-import Feedback from './components/Feedback';
 import AdminDashboard from './components/AdminDashboard';
 import { supabase } from './lib/supabase';
 import { getUserTrialStatus, logUsage } from './lib/db';
@@ -17,85 +16,204 @@ import { getUserTrialStatus, logUsage } from './lib/db';
 // CONSTANTS
 // ─────────────────────────────────────────────────────────────────────────────
 const ADMIN_EMAILS = ['uk.dscheon@gmail.com', 'superadmin@globalregai.info'];
-
-/** 비로그인 게스트에게 허용할 무료 메시지 횟수 */
 const GUEST_FREE_LIMIT = 30;
-
-/** localStorage 키 */
 const GUEST_COUNT_KEY = 'globalregai_guest_count';
 const GUEST_FIRST_KEY = 'globalregai_guest_first_ts';
-
-/** 게스트 무료 기간: 밀리초 (7일) */
 const GUEST_FREE_PERIOD_MS = 7 * 24 * 60 * 60 * 1000;
 
-const MODULES = [
-  { id: 'Chat Assistant',  icon: Search,      label: 'Chat Assistant' },
-  { id: 'FDA Compliance',  icon: ShieldAlert, label: 'FDA Compliance' },
-  { id: 'EMA/MDR',         icon: FileText,    label: 'EMA / MDR' },
-  { id: 'MFDS Korea',      icon: Globe,       label: 'MFDS Korea' },
-  { id: 'Pharmacovigilance', icon: Activity,  label: 'Pharmacovigilance' },
-  { id: 'REACH/Chemical',  icon: Box,         label: 'REACH / Chemical' },
-  { id: 'Food Safety',     icon: Layers,      label: 'Food Safety' },
-  { id: 'Animal Reg',      icon: FileCheck,   label: 'Animal Reg' },
+// ─────────────────────────────────────────────────────────────────────────────
+// TYPES
+// ─────────────────────────────────────────────────────────────────────────────
+type Module = {
+  id: string;
+  icon: React.ElementType;
+  label: string;
+  description: string;
+  agencies: string[];
+  color: string;
+};
+
+type Message = {
+  role: 'user' | 'assistant' | 'system';
+  content: string;
+  timestamp?: Date;
+};
+
+type ActiveView = 'chat' | 'search' | 'documents' | 'monitor' | 'submit';
+
+// ─────────────────────────────────────────────────────────────────────────────
+// MODULE DEFINITIONS — 전체 규제 산업 범위
+// ─────────────────────────────────────────────────────────────────────────────
+const MODULES: Module[] = [
+  {
+    id: 'pharma',
+    icon: ShieldAlert,
+    label: 'Pharmaceuticals',
+    description: 'Drug approvals, NDA/BLA/MAA, GMP, pharmacovigilance',
+    agencies: ['FDA', 'EMA', 'MFDS', 'PMDA', 'NMPA'],
+    color: '#2563EB',
+  },
+  {
+    id: 'medical_device',
+    icon: Activity,
+    label: 'Medical Devices',
+    description: '510(k), PMA, CE Mark, MDR/IVDR, MDSAP, ISO 13485',
+    agencies: ['FDA', 'EMA', 'MHRA', 'MFDS', 'IMDRF'],
+    color: '#7C3AED',
+  },
+  {
+    id: 'cosmetics',
+    icon: Layers,
+    label: 'Cosmetics',
+    description: 'CPNP, FDA cosmetic, MFDS, ISO 22716 GMP',
+    agencies: ['FDA', 'EMA', 'MFDS', 'MHRA'],
+    color: '#DB2777',
+  },
+  {
+    id: 'food',
+    icon: FileCheck,
+    label: 'Food Safety',
+    description: 'HACCP, FDA food, EFSA, Codex Alimentarius, labeling',
+    agencies: ['FDA', 'EFSA', 'MFDS', 'FAO', 'Codex'],
+    color: '#059669',
+  },
+  {
+    id: 'chemical',
+    icon: Box,
+    label: 'Chemicals',
+    description: 'REACH, RoHS, TSCA, GHS/SDS, hazardous substances',
+    agencies: ['ECHA', 'EPA', 'OECD', 'UNEP'],
+    color: '#D97706',
+  },
+  {
+    id: 'animal',
+    icon: Globe,
+    label: 'Animal & Veterinary',
+    description: 'Veterinary drugs, animal feed, WOAH, zoonotic diseases',
+    agencies: ['FDA-CVM', 'EMA-CVMP', 'WOAH', 'MFDS'],
+    color: '#0891B2',
+  },
+  {
+    id: 'standards',
+    icon: FileText,
+    label: 'Standards & QMS',
+    description: 'ISO, IEC, GMP/GLP/GCP, PIC/S, ICH guidelines',
+    agencies: ['ISO', 'IEC', 'ICH', 'PIC/S', 'WHO'],
+    color: '#4F46E5',
+  },
+  {
+    id: 'certification',
+    icon: CheckCircle,
+    label: 'Certification',
+    description: 'CE, UKCA, FCC, UL, RoHS, TÜV, CSA compliance',
+    agencies: ['CE', 'UKCA', 'FCC', 'UL', 'TÜV'],
+    color: '#0F766E',
+  },
+];
+
+const AGENCIES = [
+  'All Agencies','FDA','EMA','MHRA','MFDS','PMDA','NMPA',
+  'ANVISA','EFSA','ECHA','WHO','ICH','IMDRF','ISO','PIC/S',
 ];
 
 const LANGUAGES: Record<string, string> = {
   en: 'English', ko: '한국어', ja: '日本語',
-  'zh-TW': '中文(繁)', 'zh-CN': '中文(简)', es: 'Español'
+  'zh-TW': '中文(繁)', 'zh-CN': '中文(简)', es: 'Español',
 };
+
+const DOCUMENT_TEMPLATES = [
+  { id: 'nda',    label: 'NDA Submission Cover Letter',       agency: 'FDA'  },
+  { id: '510k',   label: '510(k) Premarket Notification',     agency: 'FDA'  },
+  { id: 'maa',    label: 'Marketing Authorisation Application',agency: 'EMA'  },
+  { id: 'ce',     label: 'CE Declaration of Conformity',      agency: 'CE'   },
+  { id: 'cpnp',   label: 'CPNP Cosmetic Product Notification', agency: 'EMA'  },
+  { id: 'gmp',    label: 'GMP Self-Inspection Checklist',     agency: 'WHO'  },
+  { id: 'reach',  label: 'REACH Registration Summary',        agency: 'ECHA' },
+  { id: 'haccp',  label: 'HACCP Plan Template',               agency: 'Codex'},
+  { id: 'sds',    label: 'Safety Data Sheet (GHS)',           agency: 'OECD' },
+  { id: 'mfds_k', label: 'MFDS 품목허가 신청서',               agency: 'MFDS' },
+];
 
 // ─────────────────────────────────────────────────────────────────────────────
 // HELPERS
 // ─────────────────────────────────────────────────────────────────────────────
-function getGuestCount(): number {
-  return parseInt(localStorage.getItem(GUEST_COUNT_KEY) || '0', 10);
+function getGuestCount() { return parseInt(localStorage.getItem(GUEST_COUNT_KEY) || '0', 10); }
+function incrementGuestCount() {
+  const n = getGuestCount() + 1;
+  localStorage.setItem(GUEST_COUNT_KEY, String(n));
+  if (!localStorage.getItem(GUEST_FIRST_KEY)) localStorage.setItem(GUEST_FIRST_KEY, String(Date.now()));
+  return n;
 }
-function incrementGuestCount(): number {
-  const next = getGuestCount() + 1;
-  localStorage.setItem(GUEST_COUNT_KEY, String(next));
-  if (!localStorage.getItem(GUEST_FIRST_KEY)) {
-    localStorage.setItem(GUEST_FIRST_KEY, String(Date.now()));
-  }
-  return next;
+function isGuestPeriodActive() {
+  const f = parseInt(localStorage.getItem(GUEST_FIRST_KEY) || '0', 10);
+  return !f || Date.now() - f < GUEST_FREE_PERIOD_MS;
 }
-function isGuestPeriodActive(): boolean {
-  const first = parseInt(localStorage.getItem(GUEST_FIRST_KEY) || '0', 10);
-  if (!first) return true; // 아직 첫 사용 전
-  return Date.now() - first < GUEST_FREE_PERIOD_MS;
-}
-function guestRemaining(): number {
-  return Math.max(0, GUEST_FREE_LIMIT - getGuestCount());
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SYSTEM PROMPT BUILDER
+// ─────────────────────────────────────────────────────────────────────────────
+function buildSystemPrompt(moduleId: string, agency: string, language: string): string {
+  const mod = MODULES.find(m => m.id === moduleId);
+  const langName = LANGUAGES[language] || 'English';
+  return `You are GlobalRegAI — an expert AI system for global regulatory affairs, compliance, and market authorization.
+
+CURRENT MODULE: ${mod?.label || 'General Regulatory'}
+FOCUS AGENCIES: ${agency === 'All Agencies' ? (mod?.agencies.join(', ') || 'FDA, EMA, MHRA, MFDS, PMDA') : agency}
+RESPONSE LANGUAGE: ${langName}
+
+YOUR EXPERTISE COVERS:
+• Regulatory Authorities: FDA, EMA, MHRA, MFDS, PMDA, NMPA, ANVISA, EFSA, ECHA
+• International Standards: ISO 13485, ISO 9001, ISO 22716, ISO 14971, ISO 22000
+• Quality Systems: GMP, cGMP, GLP, GCP, GDP, HACCP, PIC/S, GAMP 5
+• Regulatory Frameworks: ICH guidelines, IMDRF, MDSAP, Codex Alimentarius
+• Certification: CE Mark, UKCA, FCC, UL, RoHS, REACH, TÜV
+• Product Areas: Pharmaceuticals, Medical Devices, Cosmetics, Food, Chemicals, Animal/Veterinary
+
+YOUR CAPABILITIES:
+1. Q&A: Answer precise regulatory questions with citations (CFR, EU regulation numbers, etc.)
+2. Requirements Search: List exact requirements for specific country/agency/product combinations
+3. Document Drafting: Generate regulatory document templates and submission drafts
+4. Change Monitoring: Explain recent regulatory changes and their impact
+5. Submission Guidance: Step-by-step guidance for regulatory submissions
+
+RESPONSE FORMAT:
+• Always cite specific regulation numbers (e.g., 21 CFR Part 820, EU MDR 2017/745)
+• Clarify jurisdiction (country/region) for every requirement
+• Use structured format: Requirements → Process → Timeline → Key Documents
+• Flag critical compliance risks clearly
+• For document drafts, use proper regulatory format and language
+
+Always be precise. Regulatory errors have serious consequences.`;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
 // APP
 // ─────────────────────────────────────────────────────────────────────────────
-function App() {
-  const [messages, setMessages] = useState<Array<{ role: string; content: string }>>([
-    { role: 'system', content: 'Welcome to GlobalRegAI — your AI-powered global regulatory intelligence platform. Ask me anything about FDA, EMA, MFDS, REACH, food safety, and more. **No sign-in required to get started.**' }
-  ]);
-  const [input, setInput] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [session, setSession] = useState<any>(null);
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [activeModule, setActiveModule] = useState('Chat Assistant');
-  const [theme, setTheme] = useState<'light' | 'dark'>('light');
-  const [language, setLanguage] = useState('en');
+export default function App() {
+  // ── State ──
+  const [messages, setMessages]           = useState<Message[]>([]);
+  const [input, setInput]                 = useState('');
+  const [loading, setLoading]             = useState(false);
+  const [session, setSession]             = useState<any>(null);
+  const [isAdmin, setIsAdmin]             = useState(false);
+  const [activeModule, setActiveModule]   = useState('pharma');
+  const [activeAgency, setActiveAgency]   = useState('All Agencies');
+  const [activeView, setActiveView]       = useState<ActiveView>('chat');
+  const [theme, setTheme]                 = useState<'light'|'dark'>('light');
+  const [language, setLanguage]           = useState('en');
   const [showAuthModal, setShowAuthModal] = useState(false);
-  const [showAdminDashboard, setShowAdminDashboard] = useState(false);
-  const [trialInfo, setTrialInfo] = useState<any>(null);
-  const [showSharePanel, setShowSharePanel] = useState(false);
-  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
-  const [showFeedback, setShowFeedback] = useState(false);
-
-  // Guest state
-  const [guestCount, setGuestCount] = useState(getGuestCount());
-  const [guestPeriodActive] = useState(isGuestPeriodActive());
+  const [showAdmin, setShowAdmin]         = useState(false);
+  const [trialInfo, setTrialInfo]         = useState<any>(null);
+  const [uploadedFile, setUploadedFile]   = useState<File|null>(null);
+  const [guestCount, setGuestCount]       = useState(getGuestCount());
+  const [sidebarOpen, setSidebarOpen]     = useState(true);
+  const [selectedTemplate, setSelectedTemplate] = useState('');
+  const [agencyFilter, setAgencyFilter]   = useState('All Agencies');
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const fileInputRef   = useRef<HTMLInputElement>(null);
 
-  // ── Auth listener ──────────────────────────────────────────────────────────
+  // ── Auth ──
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
@@ -104,18 +222,25 @@ function App() {
         getUserTrialStatus(session.user.id).then(setTrialInfo);
       }
     });
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-      if (session?.user?.email) {
-        setIsAdmin(ADMIN_EMAILS.includes(session.user.email));
-        getUserTrialStatus(session.user.id).then(setTrialInfo);
-      } else {
-        setIsAdmin(false);
-        setTrialInfo(null);
-      }
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, s) => {
+      setSession(s);
+      if (s?.user?.email) {
+        setIsAdmin(ADMIN_EMAILS.includes(s.user.email));
+        getUserTrialStatus(s.user.id).then(setTrialInfo);
+      } else { setIsAdmin(false); setTrialInfo(null); }
     });
     return () => subscription.unsubscribe();
   }, []);
+
+  // ── Welcome message on module change ──
+  useEffect(() => {
+    const mod = MODULES.find(m => m.id === activeModule);
+    setMessages([{
+      role: 'assistant',
+      content: `## ${mod?.label} Regulatory Assistant\n\nI can help you with:\n- **Q&A** on ${mod?.agencies.join(', ')} requirements\n- **Permit & authorization** requirements by country\n- **Document drafting** for submissions\n- **Regulatory changes** monitoring\n- **Submission guidance** step-by-step\n\nWhat would you like to know?`,
+      timestamp: new Date(),
+    }]);
+  }, [activeModule]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -125,309 +250,372 @@ function App() {
     document.documentElement.setAttribute('data-theme', theme);
   }, [theme]);
 
-  // ── Send Message ───────────────────────────────────────────────────────────
-  const sendMessage = async () => {
-    if (!input.trim() && !uploadedFile) return;
+  // ── Send Message ──
+  const sendMessage = async (overrideInput?: string) => {
+    const text = (overrideInput ?? input).trim();
+    if (!text && !uploadedFile) return;
 
-    // ── 개발자(Admin) 무제한: ADMIN_EMAILS에 속한 로그인 사용자는 모든 한도 우회 ──
     const isDeveloper = session && ADMIN_EMAILS.includes(session.user.email);
 
-    // ── Guest 한도 체크 (개발자는 건너뜀) ──
     if (!session && !isDeveloper) {
-      if (!guestPeriodActive) {
-        setMessages(prev => [...prev, {
-          role: 'assistant',
-          content: '⏰ **무료 체험 기간(7일)이 종료**되었습니다. 계속 사용하시려면 로그인 후 이용해 주세요.'
-        }]);
-        setShowAuthModal(true);
-        return;
+      if (!isGuestPeriodActive()) {
+        setMessages(p => [...p, { role: 'assistant', content: '⏰ Your 7-day free trial has ended. Please sign in to continue.', timestamp: new Date() }]);
+        setShowAuthModal(true); return;
       }
       if (getGuestCount() >= GUEST_FREE_LIMIT) {
-        setMessages(prev => [...prev, {
-          role: 'assistant',
-          content: `🔒 **무료 체험 ${GUEST_FREE_LIMIT}회를 모두 사용**하셨습니다. 무제한 사용을 위해 무료 계정을 만들어 보세요!`
-        }]);
-        setShowAuthModal(true);
-        return;
+        setMessages(p => [...p, { role: 'assistant', content: `🔒 You have used all ${GUEST_FREE_LIMIT} free queries. Create a free account to continue!`, timestamp: new Date() }]);
+        setShowAuthModal(true); return;
       }
     }
 
-    const userMessage = input.trim();
+    const userMsg: Message = { role: 'user', content: text, timestamp: new Date() };
+    setMessages(p => [...p, userMsg]);
     setInput('');
-    setMessages(prev => [...prev, { role: 'user', content: userMessage }]);
     setLoading(true);
 
     try {
-      // File context 처리
-      let fileContext = '';
-      if (uploadedFile) {
-        fileContext = `\n\n[Attached file: ${uploadedFile.name}]`;
-        setUploadedFile(null);
-      }
+      let fileCtx = '';
+      if (uploadedFile) { fileCtx = `\n\n[Attached: ${uploadedFile.name}]`; setUploadedFile(null); }
 
-      const systemPrompt = `You are GlobalRegAI, an expert in global regulatory compliance for pharmaceuticals, medical devices, cosmetics, food, chemicals, and animal products. 
-You cover agencies including FDA (USA), EMA (Europe), MFDS (Korea), PMDA (Japan), NMPA (China), ANVISA (Brazil), and others.
-Current module focus: ${activeModule}.
-Respond in language: ${LANGUAGES[language] || 'English'}.
-Be precise, cite specific regulations and guidelines when relevant, and always clarify jurisdiction.`;
+      const history = messages
+        .filter(m => m.role !== 'system')
+        .slice(-8)
+        .map(m => ({ role: m.role as 'user'|'assistant', content: m.content }));
 
-      // Anthropic API 호출
-      const response = await fetch('https://api.anthropic.com/v1/messages', {
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           model: 'claude-sonnet-4-20250514',
-          max_tokens: 1500,
-          system: systemPrompt,
-          messages: [
-            ...messages
-              .filter(m => m.role !== 'system')
-              .slice(-10)
-              .map(m => ({ role: m.role as 'user' | 'assistant', content: m.content })),
-            { role: 'user', content: userMessage + fileContext }
-          ]
-        })
+          max_tokens: 2000,
+          system: buildSystemPrompt(activeModule, activeAgency, language),
+          messages: [...history, { role: 'user', content: text + fileCtx }],
+        }),
       });
 
-      const data = await response.json();
-      const aiReply = data.content?.[0]?.text || 'Sorry, I could not generate a response.';
+      const data = await res.json();
+      const reply = data.content?.[0]?.text || 'No response generated.';
 
-      setMessages(prev => [...prev, { role: 'assistant', content: aiReply }]);
-      setShowFeedback(true);
+      setMessages(p => [...p, { role: 'assistant', content: reply, timestamp: new Date() }]);
 
-      // 게스트 카운트 증가 (개발자는 카운트 없음)
-      if (!session && !isDeveloper) {
-        const newCount = incrementGuestCount();
-        setGuestCount(newCount);
-      }
+      if (!session && !isDeveloper) { const n = incrementGuestCount(); setGuestCount(n); }
+      if (session) await logUsage(session.user.id, activeModule, text, reply, 0);
 
-      // 로그인 사용자: 사용 로그 기록 (개발자 포함)
-      if (session) {
-        await logUsage(session.user.id, activeModule, userMessage, aiReply);
-      }
-
-    } catch (err) {
-      setMessages(prev => [...prev, {
-        role: 'assistant',
-        content: '⚠️ Connection error. Please try again.'
-      }]);
+    } catch {
+      setMessages(p => [...p, { role: 'assistant', content: '⚠️ Connection error. Please try again.', timestamp: new Date() }]);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleSignOut = async () => {
-    await supabase.auth.signOut();
-    setSession(null);
-    setIsAdmin(false);
+  // ── Quick Prompts by view ──
+  const quickPrompts: Record<ActiveView, string[]> = {
+    chat: [
+      `What are the key requirements for ${MODULES.find(m=>m.id===activeModule)?.label} approval in the US?`,
+      `Compare FDA vs EMA requirements for ${MODULES.find(m=>m.id===activeModule)?.label}`,
+      `What is the typical timeline for ${MODULES.find(m=>m.id===activeModule)?.label} authorization in Korea?`,
+      `What GMP standards apply to ${MODULES.find(m=>m.id===activeModule)?.label}?`,
+    ],
+    search: [
+      `List all required documents for 510(k) submission`,
+      `REACH registration requirements for chemical substances`,
+      `ISO 13485 certification process step by step`,
+      `MFDS 의약품 허가 신청 요건`,
+    ],
+    documents: [
+      `Draft a 510(k) cover letter for a Class II device`,
+      `Generate GMP self-inspection checklist`,
+      `Create REACH registration summary template`,
+      `Write CE Declaration of Conformity`,
+    ],
+    monitor: [
+      `Latest FDA regulatory changes in 2025`,
+      `EMA MDR implementation updates`,
+      `Recent MFDS regulation amendments`,
+      `ICH guidelines new releases`,
+    ],
+    submit: [
+      `Step-by-step FDA 510(k) submission process`,
+      `How to submit MAA to EMA`,
+      `MFDS online submission portal guide`,
+      `CE marking submission process for EU`,
+    ],
   };
 
-  // ── Render ─────────────────────────────────────────────────────────────────
-  if (showAdminDashboard && isAdmin) {
-    return <AdminDashboard onBack={() => setShowAdminDashboard(false)} />;
-  }
+  const handleSignOut = async () => { await supabase.auth.signOut(); setSession(null); setIsAdmin(false); };
+  const currentMod = MODULES.find(m => m.id === activeModule)!;
 
-  // ── 게스트 상태 배너 텍스트 ──
-  const guestBannerText = !session
-    ? guestPeriodActive && guestCount < GUEST_FREE_LIMIT
-      ? `🎁 Guest Mode — ${guestRemaining()}회 무료 남음 (7일 체험)`
-      : null
-    : null;
+  if (showAdmin && isAdmin) return <AdminDashboard onClose={() => setShowAdmin(false)} />;
 
+  // ─────────────────────────────────────────────────────────────────────────
+  // RENDER
+  // ─────────────────────────────────────────────────────────────────────────
   return (
-    <div className={`app-container ${theme}`}>
+    <div className={`gra-root ${theme}`} data-theme={theme}>
 
       {/* ── SIDEBAR ── */}
-      <aside className="sidebar">
-        <div className="sidebar-logo">
-          <Globe size={24} />
-          <span>GlobalRegAI</span>
+      <aside className={`gra-sidebar ${sidebarOpen ? 'open' : 'collapsed'}`}>
+        {/* Logo */}
+        <div className="gra-logo" onClick={() => setSidebarOpen(o => !o)}>
+          <div className="gra-logo-icon"><Globe size={20} /></div>
+          {sidebarOpen && <span className="gra-logo-text">GlobalRegAI</span>}
         </div>
 
-        <nav className="sidebar-nav">
+        {/* Modules */}
+        {sidebarOpen && <div className="gra-section-label">REGULATORY DOMAINS</div>}
+        <nav className="gra-nav">
           {MODULES.map(mod => (
             <button
               key={mod.id}
-              className={`nav-item ${activeModule === mod.id ? 'active' : ''}`}
-              onClick={() => setActiveModule(mod.id)}
+              className={`gra-nav-item ${activeModule === mod.id ? 'active' : ''}`}
+              onClick={() => { setActiveModule(mod.id); setActiveView('chat'); }}
+              title={mod.label}
+              style={{ '--mod-color': mod.color } as React.CSSProperties}
             >
-              <mod.icon size={16} />
-              <span>{mod.label}</span>
+              <mod.icon size={18} />
+              {sidebarOpen && (
+                <div className="gra-nav-text">
+                  <span className="gra-nav-label">{mod.label}</span>
+                  <span className="gra-nav-desc">{mod.description.split(',')[0]}</span>
+                </div>
+              )}
+              {sidebarOpen && activeModule === mod.id && <ChevronRight size={14} className="gra-nav-arrow" />}
             </button>
           ))}
         </nav>
 
-        <div className="sidebar-footer">
-          {/* ── 게스트 / 트라이얼 상태 ── */}
-          {!session && (
-            <div className="trial-box guest">
-              <Clock size={14} />
+        {/* Footer */}
+        <div className="gra-sidebar-footer">
+          {/* Guest / Developer status */}
+          {!session && sidebarOpen && (
+            <div className="gra-status-box guest">
+              <Clock size={13} />
               <div>
                 <strong>Guest Mode</strong>
-                <p>{guestCount}/{GUEST_FREE_LIMIT} 무료 사용</p>
-                <p>7일 무료 체험 중</p>
-                <button className="btn-signin-small" onClick={() => setShowAuthModal(true)}>
-                  무료 계정 만들기 →
+                <p>{guestCount}/{GUEST_FREE_LIMIT} queries used</p>
+                <button className="gra-signin-btn" onClick={() => setShowAuthModal(true)}>
+                  Create Free Account →
                 </button>
               </div>
             </div>
           )}
-
-          {/* ── 개발자 무제한 배지 ── */}
-          {session && isAdmin && (
-            <div className="trial-box developer">
-              <Activity size={14} />
+          {session && isAdmin && sidebarOpen && (
+            <div className="gra-status-box developer">
+              <CheckCircle size={13} />
               <div>
-                <strong>🛠 Developer — Unlimited</strong>
-                <p>All modules unlocked</p>
-                <p>No query limits</p>
+                <strong>🛠 Developer</strong>
+                <p>Unlimited access</p>
               </div>
             </div>
           )}
-
-          {session && !isAdmin && trialInfo && (
-            <div className="trial-box">
-              <Clock size={14} />
+          {session && !isAdmin && trialInfo && sidebarOpen && (
+            <div className="gra-status-box trial">
+              <Clock size={13} />
               <div>
                 <strong>{trialInfo.plan_type === 'trial' ? 'Trial' : 'Active'}</strong>
                 <p>{trialInfo.queries_used}/{trialInfo.queries_limit} queries</p>
-                <p>Expires: {new Date(trialInfo.trial_end).toLocaleDateString()}</p>
               </div>
             </div>
           )}
 
-          {/* ── 로그인/로그아웃 ── */}
+          {/* Auth */}
           {session ? (
             <>
-              <div className="user-info">
-                <span>{session.user.email}</span>
-                {isAdmin && <span className="admin-badge">ADMIN</span>}
-              </div>
+              {sidebarOpen && <div className="gra-user-email">{session.user.email}</div>}
               {isAdmin && (
-                <button className="nav-item" onClick={() => setShowAdminDashboard(true)}>
-                  <Users size={16} /> Admin Dashboard
+                <button className="gra-nav-item" onClick={() => setShowAdmin(true)}>
+                  <Users size={16} />
+                  {sidebarOpen && <span>Admin Dashboard</span>}
                 </button>
               )}
-              <button className="nav-item signout" onClick={handleSignOut}>
-                <LogOut size={16} /> Sign Out
+              <button className="gra-nav-item danger" onClick={handleSignOut}>
+                <LogOut size={16} />
+                {sidebarOpen && <span>Sign Out</span>}
               </button>
             </>
           ) : (
-            <button className="nav-item signin" onClick={() => setShowAuthModal(true)}>
-              <Database size={16} /> Sign In / Register
+            <button className="gra-nav-item signin" onClick={() => setShowAuthModal(true)}>
+              <Database size={16} />
+              {sidebarOpen && <span>Sign In / Register</span>}
             </button>
           )}
         </div>
       </aside>
 
       {/* ── MAIN ── */}
-      <main className="main-chat">
+      <main className="gra-main">
 
-        {/* Header */}
-        <header className="chat-header">
-          <div className="header-left">
-            <span className="module-title">{activeModule}</span>
-            {isAdmin && <span className="admin-badge">ADMIN</span>}
-            {/* 게스트 배너 */}
-            {guestBannerText && (
-              <span className="guest-banner">{guestBannerText}</span>
-            )}
+        {/* Top bar */}
+        <header className="gra-topbar">
+          <div className="gra-topbar-left">
+            <div className="gra-mod-badge" style={{ background: currentMod.color }}>
+              <currentMod.icon size={14} />
+            </div>
+            <div>
+              <h1 className="gra-topbar-title">{currentMod.label}</h1>
+              <p className="gra-topbar-agencies">{currentMod.agencies.join(' · ')}</p>
+            </div>
           </div>
-          <div className="header-controls">
-            <button onClick={() => setShowSharePanel(!showSharePanel)} title="Share">
-              <Share2 size={18} />
-            </button>
-            <select value={language} onChange={e => setLanguage(e.target.value)}>
-              {Object.entries(LANGUAGES).map(([k, v]) => (
-                <option key={k} value={k}>{v}</option>
-              ))}
+          <div className="gra-topbar-right">
+            <select
+              className="gra-select"
+              value={agencyFilter}
+              onChange={e => setAgencyFilter(e.target.value)}
+            >
+              {AGENCIES.map(a => <option key={a}>{a}</option>)}
             </select>
-            <button onClick={() => setTheme(t => t === 'light' ? 'dark' : 'light')}>
-              {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
+            <select
+              className="gra-select"
+              value={language}
+              onChange={e => setLanguage(e.target.value)}
+            >
+              {Object.entries(LANGUAGES).map(([k,v]) => <option key={k} value={k}>{v}</option>)}
+            </select>
+            <button className="gra-icon-btn" onClick={() => setTheme(t => t==='light'?'dark':'light')}>
+              {theme==='light' ? <Moon size={17}/> : <Sun size={17}/>}
             </button>
-            <span className={`status-dot ${session ? 'online' : 'guest'}`} title={session ? 'Connected' : 'Guest Mode'} />
+            <div className={`gra-status-dot ${session ? 'online' : 'guest'}`} />
           </div>
         </header>
 
-        {/* Share Panel */}
-        {showSharePanel && (
-          <div className="share-panel">
-            <p>🔗 Share: <strong>https://www.globalregai.info</strong></p>
-            <button onClick={() => setShowSharePanel(false)}>Close</button>
+        {/* View Tabs */}
+        <div className="gra-tabs">
+          {([
+            { id:'chat',      icon: Send,       label:'Q&A Chat'     },
+            { id:'search',    icon: Search,     label:'Requirements' },
+            { id:'documents', icon: FileText,   label:'Documents'    },
+            { id:'monitor',   icon: AlertCircle,label:'Monitor'      },
+            { id:'submit',    icon: Share2,     label:'Submit'       },
+          ] as {id:ActiveView; icon:React.ElementType; label:string}[]).map(tab => (
+            <button
+              key={tab.id}
+              className={`gra-tab ${activeView===tab.id?'active':''}`}
+              onClick={() => setActiveView(tab.id)}
+            >
+              <tab.icon size={15} />
+              <span>{tab.label}</span>
+            </button>
+          ))}
+        </div>
+
+        {/* ── DOCUMENT TEMPLATES panel (only on documents view) ── */}
+        {activeView === 'documents' && (
+          <div className="gra-doc-panel">
+            <div className="gra-doc-panel-header">
+              <Filter size={14} /> Select Template
+            </div>
+            <div className="gra-doc-grid">
+              {DOCUMENT_TEMPLATES.map(t => (
+                <button
+                  key={t.id}
+                  className={`gra-doc-chip ${selectedTemplate===t.id?'active':''}`}
+                  onClick={() => {
+                    setSelectedTemplate(t.id);
+                    sendMessage(`Draft a complete ${t.label} (${t.agency})`);
+                  }}
+                >
+                  <span className="gra-doc-agency">{t.agency}</span>
+                  <span>{t.label}</span>
+                </button>
+              ))}
+            </div>
           </div>
         )}
 
         {/* Messages */}
-        <div className="messages-container">
-          {messages.map((msg, idx) => (
-            <div key={idx} className={`message ${msg.role}`}>
-              <div className="avatar">{msg.role === 'user' ? 'U' : 'AI'}</div>
-              <div className="message-content">
-                <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.content}</ReactMarkdown>
+        <div className="gra-messages">
+          {messages.map((msg, i) => (
+            <div key={i} className={`gra-msg ${msg.role}`}>
+              <div className="gra-msg-avatar">
+                {msg.role==='user' ? 'U' : <Globe size={14}/>}
               </div>
+              <div className="gra-msg-body">
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.content}</ReactMarkdown>
+                {msg.timestamp && (
+                  <span className="gra-msg-time">
+                    {msg.timestamp.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}
+                  </span>
+                )}
+              </div>
+              {msg.role==='assistant' && (
+                <button
+                  className="gra-copy-btn"
+                  title="Copy"
+                  onClick={() => navigator.clipboard.writeText(msg.content)}
+                >
+                  <Download size={13}/>
+                </button>
+              )}
             </div>
           ))}
           {loading && (
-            <div className="message assistant">
-              <div className="avatar">AI</div>
-              <div className="message-content typing">
-                <span /><span /><span />
-              </div>
+            <div className="gra-msg assistant">
+              <div className="gra-msg-avatar"><Globe size={14}/></div>
+              <div className="gra-msg-body gra-typing"><span/><span/><span/></div>
             </div>
           )}
-          {/* Feedback (로그인 사용자 + 마지막 메시지일 때) */}
-          {showFeedback && session && messages[messages.length - 1]?.role === 'assistant' && (
-            <Feedback
-              messageId={String(messages.length)}
-              userId={session.user.id}
-              onClose={() => setShowFeedback(false)}
-            />
-          )}
-          <div ref={messagesEndRef} />
+          <div ref={messagesEndRef}/>
         </div>
 
-        {/* Input Area */}
-        <div className="input-area">
+        {/* Quick Prompts */}
+        {messages.length <= 1 && (
+          <div className="gra-quick-prompts">
+            {quickPrompts[activeView].map((p, i) => (
+              <button key={i} className="gra-quick-btn" onClick={() => sendMessage(p)}>
+                <ChevronDown size={13}/> {p}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* Input */}
+        <div className="gra-input-area">
           <input
-            ref={fileInputRef}
-            type="file"
-            accept=".pdf,.doc,.docx,.txt"
-            style={{ display: 'none' }}
-            onChange={e => setUploadedFile(e.target.files?.[0] || null)}
+            ref={fileInputRef} type="file"
+            accept=".pdf,.doc,.docx,.txt,.xlsx"
+            style={{display:'none'}}
+            onChange={e => setUploadedFile(e.target.files?.[0]||null)}
           />
           {uploadedFile && (
-            <div className="file-indicator">
+            <div className="gra-file-chip">
               📎 {uploadedFile.name}
               <button onClick={() => setUploadedFile(null)}>✕</button>
             </div>
           )}
-          <button className="attach-btn" onClick={() => fileInputRef.current?.click()} title="Upload PDF/Doc">
-            <Paperclip size={20} />
-          </button>
-          <input
-            type="text"
-            value={input}
-            onChange={e => setInput(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && !loading && sendMessage()}
-            placeholder={
-              !session
-                ? `Ask anything (${guestRemaining()} free left) — no sign-in needed...`
-                : `Ask ${activeModule} (attach PDF for auto-summary)...`
-            }
-            disabled={loading}
-          />
-          <button className="send-btn" onClick={sendMessage} disabled={loading || (!input.trim() && !uploadedFile)}>
-            <Send size={20} />
-          </button>
+          <div className="gra-input-row">
+            <button className="gra-attach-btn" onClick={() => fileInputRef.current?.click()} title="Attach document">
+              <Paperclip size={18}/>
+            </button>
+            <input
+              className="gra-text-input"
+              type="text"
+              value={input}
+              onChange={e => setInput(e.target.value)}
+              onKeyDown={e => e.key==='Enter' && !loading && sendMessage()}
+              placeholder={
+                !session
+                  ? `Ask about ${currentMod.label} regulations... (${GUEST_FREE_LIMIT - guestCount} free queries left)`
+                  : `Ask about ${currentMod.label}, ${activeAgency} requirements...`
+              }
+              disabled={loading}
+            />
+            <button
+              className="gra-send-btn"
+              onClick={() => sendMessage()}
+              disabled={loading || !input.trim()}
+              style={{ background: currentMod.color }}
+            >
+              <Send size={18}/>
+            </button>
+          </div>
         </div>
       </main>
 
-      {/* Auth Modal */}
+      {/* ── AUTH MODAL ── */}
       {showAuthModal && (
-        <div className="modal-overlay">
-          <div className="modal-close-bg" onClick={() => setShowAuthModal(false)} />
-          <div className="modal-content">
-            <button className="modal-close-btn" onClick={() => setShowAuthModal(false)}>✕</button>
+        <div className="gra-modal-overlay" onClick={() => setShowAuthModal(false)}>
+          <div className="gra-modal" onClick={e => e.stopPropagation()}>
+            <button className="gra-modal-close" onClick={() => setShowAuthModal(false)}>✕</button>
             <Auth onLogin={() => setShowAuthModal(false)} />
           </div>
         </div>
@@ -435,5 +623,3 @@ Be precise, cite specific regulations and guidelines when relevant, and always c
     </div>
   );
 }
-
-export default App;

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+﻿import { useState, useEffect, useRef } from 'react';
 import {
   Send, Globe, Sun, Moon, Search, Layers, ShieldAlert,
   FileText, Activity, Box, FileCheck, Users, LogOut,
@@ -416,7 +416,7 @@ export default function App() {
       for (let i = 0; i < availableKeys.length; i++) {
         const keyToUse = availableKeys[(geminiKeyIndex + i) % availableKeys.length];
         const res = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${keyToUse}`,
+          `/api/gemini`,
           { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(GEMINI_BODY) }
         );
         geminiData = await res.json();

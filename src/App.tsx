@@ -135,6 +135,22 @@ const DOCUMENT_TEMPLATES = [
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
+// GEMINI KEY ROTATION — 3개 키 자동 순환
+// ─────────────────────────────────────────────────────────────────────────────
+let geminiKeyIndex = 0;
+function getGeminiKey(): string {
+  const keys = [
+    import.meta.env.VITE_GEMINI_API_KEY_1,
+    import.meta.env.VITE_GEMINI_API_KEY_2,
+    import.meta.env.VITE_GEMINI_API_KEY_3,
+  ].filter(Boolean);
+  if (keys.length === 0) return import.meta.env.VITE_GEMINI_API_KEY || "";
+  const key = keys[geminiKeyIndex % keys.length];
+  geminiKeyIndex++;
+  return key;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // HELPERS
 // ─────────────────────────────────────────────────────────────────────────────
 function getGuestCount() { return parseInt(localStorage.getItem(GUEST_COUNT_KEY) || '0', 10); }
@@ -383,7 +399,7 @@ export default function App() {
       ];
 
       const geminiRes = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${import.meta.env.VITE_GEMINI_API_KEY}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${getGeminiKey()}`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },

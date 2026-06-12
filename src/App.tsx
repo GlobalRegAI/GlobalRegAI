@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
   Send, Globe, Sun, Moon, Search, Layers, ShieldAlert,
   FileText, Activity, Box, FileCheck, Users, LogOut,
@@ -150,40 +150,127 @@ function isGuestPeriodActive() {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// SYSTEM PROMPT BUILDER
+// REGULATORY KNOWLEDGE HARNESS — Gemini 정확성 강화
 // ─────────────────────────────────────────────────────────────────────────────
+const REGULATORY_HARNESS_RULES = [
+  'ALWAYS cite specific regulation numbers — never give generic statements without references',
+  'NEVER fabricate regulation numbers or guidance titles that do not exist',
+  'If uncertain about a specific number, say "verify with official source" rather than guessing',
+  'ALWAYS specify jurisdiction (US/EU/Korea/Japan/etc.) for every requirement stated',
+  'ALWAYS distinguish between MANDATORY requirements and RECOMMENDATIONS',
+  'For timelines, provide official ranges — do not invent specific durations',
+  'Flag with WARNING symbol when requirements may have changed recently',
+  'Use checkmark for confirmed requirements, clipboard for documentation items',
+  'Grammar: use active voice for requirements, passive voice for processes',
+  'Numbers: use official formats (dates as YYYY-MM-DD, currencies as ISO 4217)',
+  'Acronyms: define on first use then use acronym consistently throughout',
+  'Structure every response with clear headers, jurisdiction labels, and document lists',
+];
+
+const MODULE_KNOWLEDGE: Record<string, string> = {
+  pharma: `PHARMACEUTICAL REGULATORY KNOWLEDGE:
+US FDA: 21 CFR Part 210/211 (cGMP Manufacturing) | 21 CFR Part 314 (NDA Applications) | 21 CFR Part 312 (IND) | 21 CFR Part 600-680 (Biologics)
+EU EMA: Directive 2001/83/EC | Regulation (EC) No 726/2004 (centralised procedure) | EudraLex Volume 4 (GMP)
+Korea MFDS: Pharmaceutical Affairs Act (약사법) | MFDS GMP Notification | Drug Approval Review Standards
+Japan PMDA: Pharmaceuticals and Medical Devices Act (PMDA) | J-GMP
+ICH Guidelines: Q1-Q14 Quality | S1-S12 Safety | E1-E19 Efficacy | M1-M16 Multidisciplinary
+Pharmacovigilance: FDA FAERS | EMA EudraVigilance | ICH E2A/E2B/E2C/E2D/E2E/E2F`,
+
+  medical_device: `MEDICAL DEVICE REGULATORY KNOWLEDGE:
+US FDA: 21 CFR Part 820 (Quality System Regulation) | 21 CFR Part 807 (510k) | 21 CFR Part 814 (PMA) | 21 CFR Part 830 (UDI)
+EU: MDR 2017/745 | IVDR 2017/746 | MEDDEV Guidelines | Notified Body (NB) assessment required Class IIa+
+Korea MFDS: Medical Devices Act (의료기기법) | KGMP | Class I-IV classification
+Standards: ISO 13485:2016 (QMS) | ISO 14971:2019 (Risk Management) | IEC 62304 (Software) | ISO 14155:2020 (Clinical)
+MDSAP: Single audit programme covering FDA/Health Canada/ANVISA/TGA/PMDA
+UDI: FDA UDI Final Rule | EU MDR Article 27 | IMDRF UDI Guidance`,
+
+  cosmetics: `COSMETICS REGULATORY KNOWLEDGE:
+US FDA: MoCRA 2022 (Modernization of Cosmetics Regulation Act) | 21 CFR Part 700-740 | No pre-market approval — post-market responsibility
+EU: Regulation (EC) No 1223/2009 | CPNP mandatory notification | Responsible Person (RP) required | EU Annex II (1,377 prohibited substances)
+Korea MFDS: Cosmetics Act (화장품법) | Functional Cosmetics Review | Prohibited/Restricted Ingredients List
+GMP: ISO 22716:2007 (EU mandatory for distributors) | FDA Cosmetic GMP Guidance (voluntary)
+Labeling: INCI nomenclature globally | FDA ingredient list rules | EU full ingredient list mandatory`,
+
+  food: `FOOD SAFETY REGULATORY KNOWLEDGE:
+US FDA: FSMA 2011 | 21 CFR Part 117 (Preventive Controls for Human Food) | 21 CFR Part 101 (Labeling) | GRAS Notification
+US USDA/FSIS: meat, poultry, processed egg products oversight
+EU: Regulation (EC) No 178/2002 (General Food Law) | Regulation (EU) 1169/2011 (Food Information) | EFSA risk assessment
+Korea MFDS: Food Sanitation Act (식품위생법) | Health Functional Food Act (건강기능식품법) | HACCP mandatory for certain categories
+Codex Alimentarius: International food standards, CAC/RCP 1-1969 Rev.4 (HACCP)
+Allergens: FDA 9 major allergens | EU 14 allergens | mandatory declaration globally`,
+
+  chemical: `CHEMICAL REGULATORY KNOWLEDGE:
+EU REACH: Regulation (EC) No 1907/2006 | Registration >1 tonne/year | SVHC Authorisation | Restriction (Annex XVII)
+EU RoHS: Directive 2011/65/EU amended by 2015/863 | 10 restricted substances | CE marking required
+US TSCA: EPA Toxic Substances Control Act | PMN for new chemicals | Section 6 risk evaluation | CDR reporting
+GHS/SDS: UN GHS Revision 9 | 16-section Safety Data Sheet | 9 hazard pictograms | signal words Danger/Warning
+OECD Test Guidelines: chemical safety assessment methods | Good Laboratory Practice (GLP)
+ECHA: Substance registration | C&L Notification | SIEF participation | SCIP database`,
+
+  animal: `ANIMAL AND VETERINARY REGULATORY KNOWLEDGE:
+US FDA-CVM: 21 CFR Parts 500-599 | NADA (New Animal Drug Application) | ANADA (Abbreviated) | Veterinary Feed Directive
+EU EMA-CVMP: Regulation (EU) 2019/6 (Veterinary Medicinal Products) | centralised/decentralised/MRP procedures
+WOAH (formerly OIE): Terrestrial Animal Health Code | Aquatic Animal Health Code | disease notification obligations
+Veterinary GMP: same framework as human pharma with species-specific validation requirements
+Zoonotic diseases: One Health approach | WHO/FAO/WOAH tripartite coordination
+Animal feed: EU Regulation (EC) No 767/2009 | FDA 21 CFR Part 573 (feed additives)`,
+
+  standards: `STANDARDS AND QMS KNOWLEDGE:
+ISO 13485:2016: Medical device QMS | mandatory for EU MDR CE marking | covers design, production, post-market
+ISO 14971:2019: Risk management for medical devices | hazard identification | risk evaluation | risk control
+ISO 9001:2015: General QMS | process approach | risk-based thinking | PDCA cycle
+ISO 22716:2007: Cosmetics GMP | EU mandatory for responsible person | covers production, control, storage
+ISO 22000:2018: Food safety management | HACCP integration | prerequisite programs
+ICH Q10: Pharmaceutical Quality System | lifecycle approach | continual improvement
+PIC/S GMP: PE 009-16 | mutual recognition among 53 participating authorities
+GAMP 5: Computer system validation for regulated industries`,
+
+  certification: `CERTIFICATION AND COMPLIANCE KNOWLEDGE:
+CE Marking: EU Declaration of Conformity | essential requirements compliance | Notified Body for Class IIa+ devices, Class II cosmetics (claims)
+UKCA: Post-Brexit UK conformity assessment | valid from Jan 2023 | UKCA marking for Great Britain market
+FCC: Part 15 (unintentional radiators) | Part 18 (ISM equipment) | FCC ID required for intentional radiators
+UL: UL 62368-1 (audio/video IT) | UL 60950 (legacy) | NRTL recognition | North American safety
+RoHS: Substance testing per IEC 62321 | technical documentation | EU Declaration of Conformity
+TUV/SGS/Intertek/Bureau Veritas: third-party testing and certification bodies
+CSA: Canadian standards | CAN/CSA harmonisation with UL | CSA Group certification`,
+};
+
 function buildSystemPrompt(moduleId: string, agency: string, language: string): string {
   const mod = MODULES.find(m => m.id === moduleId);
   const langName = LANGUAGES[language] || 'English';
-  return `You are GlobalRegAI — an expert AI system for global regulatory affairs, compliance, and market authorization.
+  const agencyFocus = agency === 'All Agencies'
+    ? (mod?.agencies.join(', ') || 'FDA, EMA, MHRA, MFDS, PMDA')
+    : agency;
+  const modKnowledge = MODULE_KNOWLEDGE[moduleId] || MODULE_KNOWLEDGE['pharma'];
+  const rules = REGULATORY_HARNESS_RULES.map((r, i) => `${i + 1}. ${r}`).join('\n');
 
-CURRENT MODULE: ${mod?.label || 'General Regulatory'}
-FOCUS AGENCIES: ${agency === 'All Agencies' ? (mod?.agencies.join(', ') || 'FDA, EMA, MHRA, MFDS, PMDA') : agency}
+  return `You are GlobalRegAI — a precise expert AI for global regulatory affairs, compliance, and market authorization.
+
+ACTIVE MODULE: ${mod?.label || 'General Regulatory'}
+FOCUS AGENCIES: ${agencyFocus}
 RESPONSE LANGUAGE: ${langName}
 
-YOUR EXPERTISE COVERS:
-• Regulatory Authorities: FDA, EMA, MHRA, MFDS, PMDA, NMPA, ANVISA, EFSA, ECHA
-• International Standards: ISO 13485, ISO 9001, ISO 22716, ISO 14971, ISO 22000
-• Quality Systems: GMP, cGMP, GLP, GCP, GDP, HACCP, PIC/S, GAMP 5
-• Regulatory Frameworks: ICH guidelines, IMDRF, MDSAP, Codex Alimentarius
-• Certification: CE Mark, UKCA, FCC, UL, RoHS, REACH, TÜV
-• Product Areas: Pharmaceuticals, Medical Devices, Cosmetics, Food, Chemicals, Animal/Veterinary
+${modKnowledge}
 
-YOUR CAPABILITIES:
-1. Q&A: Answer precise regulatory questions with citations (CFR, EU regulation numbers, etc.)
-2. Requirements Search: List exact requirements for specific country/agency/product combinations
-3. Document Drafting: Generate regulatory document templates and submission drafts
-4. Change Monitoring: Explain recent regulatory changes and their impact
-5. Submission Guidance: Step-by-step guidance for regulatory submissions
+STRICT ACCURACY HARNESS (MUST FOLLOW):
+${rules}
 
-RESPONSE FORMAT:
-• Always cite specific regulation numbers (e.g., 21 CFR Part 820, EU MDR 2017/745)
-• Clarify jurisdiction (country/region) for every requirement
-• Use structured format: Requirements → Process → Timeline → Key Documents
-• Flag critical compliance risks clearly
-• For document drafts, use proper regulatory format and language
+MANDATORY RESPONSE STRUCTURE:
+- For Q&A: ## Topic | Jurisdiction | Regulation Number | Requirements | Timeline | Documents | Risks
+- For Documents: Use official regulatory language | Mark [REQUIRED] and [OPTIONAL] fields
+- For Comparisons: Use tables with jurisdiction rows and checkmark/cross indicators
+- For Monitoring: State effective dates | Impact assessment | Action required by when
 
-Always be precise. Regulatory errors have serious consequences.`;
+GRAMMAR STANDARDS:
+- Regulatory terminology only — no colloquial language
+- Active voice: "The applicant must submit..." 
+- Passive voice for processes: "Applications are reviewed within..."
+- Define all acronyms on first use
+- ISO date format: YYYY-MM-DD
+
+CRITICAL RULE: If uncertain about any specific regulation number, date, or requirement,
+explicitly state "Please verify with [agency name] official website" rather than guessing.
+Accuracy is paramount — regulatory errors have serious legal and safety consequences.`;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -197,7 +284,7 @@ export default function App() {
   const [session, setSession]             = useState<any>(null);
   const [isAdmin, setIsAdmin]             = useState(false);
   const [activeModule, setActiveModule]   = useState('pharma');
-  const [activeAgency, _setActiveAgency]   = useState('All Agencies');
+  const [activeAgency, setActiveAgency]   = useState('All Agencies');
   const [activeView, setActiveView]       = useState<ActiveView>('chat');
   const [theme, setTheme]                 = useState<'light'|'dark'>('light');
   const [language, setLanguage]           = useState('en');
@@ -282,19 +369,64 @@ export default function App() {
         .slice(-8)
         .map(m => ({ role: m.role as 'user'|'assistant', content: m.content }));
 
-      const res = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: 'claude-sonnet-4-20250514',
-          max_tokens: 2000,
-          system: buildSystemPrompt(activeModule, activeAgency, language),
-          messages: [...history, { role: 'user', content: text + fileCtx }],
-        }),
-      });
+      // ── Gemini 1.5 Flash API 호출 (무료 tier) ──
+      const systemPrompt = buildSystemPrompt(activeModule, activeAgency, language);
 
-      const data = await res.json();
-      const reply = data.content?.[0]?.text || 'No response generated.';
+      const geminiContents = [
+        { role: 'user',  parts: [{ text: systemPrompt }] },
+        { role: 'model', parts: [{ text: 'Understood. I am GlobalRegAI. I will provide precise, well-structured regulatory guidance following all accuracy rules and citation requirements.' }] },
+        ...history.slice(-6).map(m => ({
+          role: m.role === 'assistant' ? 'model' : 'user',
+          parts: [{ text: m.content }],
+        })),
+        { role: 'user', parts: [{ text: text + fileCtx }] },
+      ];
+
+      const geminiRes = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${import.meta.env.VITE_GEMINI_API_KEY}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: geminiContents,
+            generationConfig: {
+              maxOutputTokens: 2048,
+              temperature: 0.2,
+              topP: 0.8,
+              topK: 40,
+            },
+            safetySettings: [
+              { category: 'HARM_CATEGORY_HARASSMENT',        threshold: 'BLOCK_NONE' },
+              { category: 'HARM_CATEGORY_HATE_SPEECH',       threshold: 'BLOCK_NONE' },
+              { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_NONE' },
+              { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_NONE' },
+            ],
+          }),
+        }
+      );
+
+      const geminiData = await geminiRes.json();
+
+      // ── 응답 검증 및 추출 ──
+      let reply = '';
+      if (geminiData.candidates?.[0]?.content?.parts?.[0]?.text) {
+        reply = geminiData.candidates[0].content.parts[0].text;
+        // 너무 짧은 응답 보완
+        if (reply.length < 80) {
+          reply += '\n\n*For comprehensive guidance, please provide more details about your product type, target market, and specific regulatory question.*';
+        }
+      } else if (geminiData.error) {
+        const errMsg = geminiData.error.message || 'Unknown error';
+        if (errMsg.includes('quota') || errMsg.includes('limit') || errMsg.includes('RESOURCE_EXHAUSTED')) {
+          reply = '⚠️ **Daily free usage limit reached.** GlobalRegAI will resume tomorrow. Thank you for using the service.';
+        } else if (errMsg.includes('API_KEY') || errMsg.includes('invalid')) {
+          reply = '⚠️ **Service configuration error.** Please contact the administrator at uk.dscheon@gmail.com.';
+        } else {
+          reply = `⚠️ **Temporary service issue.** Please try again in a moment. (${errMsg})`;
+        }
+      } else {
+        reply = '⚠️ No response received. Please rephrase your question and try again.';
+      }
 
       setMessages(p => [...p, { role: 'assistant', content: reply, timestamp: new Date() }]);
 
@@ -345,7 +477,7 @@ export default function App() {
   const handleSignOut = async () => { await supabase.auth.signOut(); setSession(null); setIsAdmin(false); };
   const currentMod = MODULES.find(m => m.id === activeModule)!;
 
-  if (showAdmin && isAdmin) return <AdminDashboard userId={session?.user?.id} onLogout={handleSignOut} />;
+  if (showAdmin && isAdmin) return <AdminDashboard userId={session?.user?.id} onLogout={() => { setShowAdmin(false); }} />;
 
   // ─────────────────────────────────────────────────────────────────────────
   // RENDER
@@ -460,7 +592,7 @@ export default function App() {
             <select
               className="gra-select"
               value={agencyFilter}
-              onChange={e => setAgencyFilter(e.target.value)}
+              onChange={e => { setAgencyFilter(e.target.value); setActiveAgency(e.target.value); }}
             >
               {AGENCIES.map(a => <option key={a}>{a}</option>)}
             </select>

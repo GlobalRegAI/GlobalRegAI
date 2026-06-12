@@ -1,4 +1,4 @@
-// src/lib/mcp-globalregai.ts - 최적화된 GlobalRegAI MCP 통합 모듈
+﻿// src/lib/mcp-globalregai.ts - 최적화된 GlobalRegAI MCP 통합 모듈
 
 /**
  * GlobalRegAI 커스텀 MCP 시스템
@@ -340,7 +340,7 @@ export const koreanLawTools = {
     });
   },
 
-  async searchKoreanLaw(params: {
+  async searchKoreanLaw(_params: {
     keyword: string;
     lawType?: string;
   }): Promise<any> {
@@ -355,7 +355,7 @@ export const koreanLawTools = {
     }
   },
 
-  async searchCaselaw(params: {
+  async searchCaselaw(_params: {
     keyword: string;
     court?: string;
   }): Promise<any> {
@@ -533,7 +533,7 @@ export const emaTools = {
  */
 export function detectRequiredMCPs(
   query: string,
-  language: string,
+  _language: string,
   country: string,
   industry: string
 ): string[] {
@@ -606,7 +606,7 @@ export async function callMCPTool(
  */
 export async function integrateMultipleMCPs(
   query: string,
-  language: string,
+  _language: string,
   country: string,
   industry: string
 ): Promise<Record<string, any>> {
@@ -648,14 +648,14 @@ export async function integrateMultipleMCPs(
  */
 export function formatMCPResponse(
   mcpResults: Record<string, any>,
-  language: string
+  _language: string
 ): string {
   if (Object.keys(mcpResults).length === 0) {
     return "규제 데이터를 조회할 수 없습니다.";
   }
 
   const sources = Object.entries(mcpResults)
-    .map(([key, value]) => {
+    .map(([_key, value]) => {
       const official = value.official ? "✅ 공식 데이터" : "📊 보조 데이터";
       return `
 [${value.source}] ${official}

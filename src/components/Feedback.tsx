@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { ThumbsUp, ThumbsDown, MessageSquare } from 'lucide-react';
+﻿import { useState } from 'react';
+import { MessageSquare } from 'lucide-react';
 import { submitFeedback } from '../lib/db';
 
 interface FeedbackProps {

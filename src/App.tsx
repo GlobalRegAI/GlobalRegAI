@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+﻿import { useState, useEffect, useRef } from 'react';
 import {
   Send, Globe, Sun, Moon, Search, Layers, ShieldAlert,
   FileText, Activity, Box, FileCheck, Users, LogOut,
@@ -197,7 +197,7 @@ export default function App() {
   const [session, setSession]             = useState<any>(null);
   const [isAdmin, setIsAdmin]             = useState(false);
   const [activeModule, setActiveModule]   = useState('pharma');
-  const [activeAgency, setActiveAgency]   = useState('All Agencies');
+  const [activeAgency, _setActiveAgency]   = useState('All Agencies');
   const [activeView, setActiveView]       = useState<ActiveView>('chat');
   const [theme, setTheme]                 = useState<'light'|'dark'>('light');
   const [language, setLanguage]           = useState('en');
@@ -345,7 +345,7 @@ export default function App() {
   const handleSignOut = async () => { await supabase.auth.signOut(); setSession(null); setIsAdmin(false); };
   const currentMod = MODULES.find(m => m.id === activeModule)!;
 
-  if (showAdmin && isAdmin) return <AdminDashboard onClose={() => setShowAdmin(false)} />;
+  if (showAdmin && isAdmin) return <AdminDashboard onBack={() => setShowAdmin(false)} />;
 
   // ─────────────────────────────────────────────────────────────────────────
   // RENDER

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+﻿import { useState, useEffect, useRef } from 'react';
 import {
   Send, Globe, Sun, Moon, Search, Layers, ShieldAlert,
   FileText, Activity, Box, FileCheck, Users, LogOut,
@@ -431,7 +431,7 @@ export default function App() {
       setMessages(p => [...p, { role: 'assistant', content: reply, timestamp: new Date() }]);
 
       if (!session && !isDeveloper) { const n = incrementGuestCount(); setGuestCount(n); }
-      if (session) await logUsage(session.user.id, activeModule, text, reply, 0);
+      if (session) await logUsage(session.user.id, text, reply, 0, 0);
 
     } catch {
       setMessages(p => [...p, { role: 'assistant', content: '⚠️ Connection error. Please try again.', timestamp: new Date() }]);

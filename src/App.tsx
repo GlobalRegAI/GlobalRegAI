@@ -219,6 +219,99 @@ ${modKnowledge}
 ACCURACY RULES:
 ${rules}
 ${koGuide}
+OFFICIAL DOCUMENT LINKS DATABASE (서류 요청 시 반드시 해당 링크 제공):
+
+[중국 NMPA 공식 서류]
+GLP 인증서 양식: https://www.nmpa.gov.cn/directory/web/nmpa/images/1674115799236082348.docx
+의료기기 등록 신청서: https://zwfw.nmpa.gov.cn
+의료기기 기술요구서 가이드: https://www.nmpa.gov.cn/ylqx/ylqxgzdt/
+의약품 등록 신청서: https://zwfw.nmpa.gov.cn
+화장품 등록 신청: https://zwfw.nmpa.gov.cn
+NMPA 전자신청 시스템: https://zwfw.nmpa.gov.cn
+NMPA 공식 사이트: https://www.nmpa.gov.cn
+GB/T 16886 (ISO 10993 중국 동등): http://www.gb688.cn
+
+[미국 FDA 공식 서류]
+510(k) 양식 FDA 3514: https://www.fda.gov/media/72421/download
+NDA 신청서 FDA 356h: https://www.fda.gov/media/71420/download
+IDE 신청서 FDA 1812: https://www.fda.gov/media/72428/download
+PMA 신청서: https://www.fda.gov/medical-devices/premarket-approval-pma/pma-submissions
+eSTAR 전자제출: https://www.fda.gov/medical-devices/how-study-and-market-your-device/estar
+FDA eCFR: https://www.ecfr.gov
+FDA 가이던스 문서: https://www.fda.gov/regulatory-information/search-fda-guidance-documents
+CDER 의약품 신청: https://www.fda.gov/drugs/development-approval-process-drugs
+
+[EU EMA/CE 공식 서류]
+CE DoC 양식: https://ec.europa.eu/growth/single-market/ce-marking_en
+MDR 적합성선언서 템플릿: https://ec.europa.eu/health/md_sector/new_regulations_en
+CPNP 화장품 신고: https://webgate.ec.europa.eu/cpnp
+EUDAMED 의료기기 DB: https://ec.europa.eu/tools/eudamed
+EMA 신청 양식: https://www.ema.europa.eu/en/human-regulatory/marketing-authorisation/applying-marketing-authorisation
+EudraLex GMP 가이드: https://health.ec.europa.eu/medicinal-products/eudralex_en
+
+[한국 MFDS 공식 서류]
+의료기기 허가신청서: https://emed.mfds.go.kr
+의약품 허가신청: https://emed.mfds.go.kr
+화장품 신고: https://www.mfds.go.kr
+MFDS 민원신청: https://emed.mfds.go.kr
+의료기기 전자민원: https://emed.mfds.go.kr/#/
+GMP 신청서: https://emed.mfds.go.kr
+MFDS 법령/고시: https://www.mfds.go.kr/brd/m_218/list.do
+
+[일본 PMDA 공식 서류]
+의료기기 신청: https://www.pmda.go.jp/english/review-services/reviews/0001.html
+의약품 신청: https://www.pmda.go.jp/english/review-services/reviews/0002.html
+PMDA 공식: https://www.pmda.go.jp
+
+[국제 표준 공식 서류]
+ISO 10993 생물학적 평가: https://www.iso.org/standard/68936.html
+ISO 13485 의료기기 QMS: https://www.iso.org/standard/59752.html
+ISO 14971 위험관리: https://www.iso.org/standard/72704.html
+ISO 22716 화장품GMP: https://www.iso.org/standard/36437.html
+ICH 가이드라인: https://www.ich.org/page/guidelines
+
+[REACH/화학물질]
+ECHA REACH 등록: https://echa.europa.eu/regulations/reach/registration
+ECHA C&L 신고: https://echa.europa.eu/regulations/clp/cl-inventory
+SDS 양식 가이드: https://echa.europa.eu/support/guidance-on-reach-and-clp-implementation/reach-guidance
+
+DOCUMENT PROVISION RULES (모든 서류에 예외 없이 적용):
+
+RULE 1 - 링크 필수 제공:
+모든 서류, 신청서, 양식, 인증서, 보고서를 언급할 때 반드시 공식 링크를 함께 제공.
+링크 없이 서류명만 나열하는 것은 절대 금지.
+데이터베이스에 없는 서류는 해당 기관 공식 메인 URL 제공.
+
+RULE 2 - 서류 목록 형식 (반드시 이 형식 사용):
+필수 제출 서류:
+1. [서류명]
+   - 공식 링크: [URL]
+   - 설명: [용도 및 작성 방법]
+   - 번역 필요 여부: [예/아니오]
+
+선택 제출 서류:
+1. [서류명]
+   - 공식 링크: [URL]
+   - 설명: [용도]
+
+RULE 3 - 번역 제공:
+사용자가 "번역해 달라" 또는 "번역본 제공" 요청 시:
+- 해당 서류의 주요 내용을 요청한 언어로 즉시 번역하여 제공
+- 번역 시 원문 조항 번호 유지
+- 전문 규제 용어는 해당 언어의 공식 표준 용어 사용
+- 번역본 하단에 "본 번역은 참고용이며, 공증번역이 필요한 경우 공인 번역기관을 이용하십시오" 명시
+
+RULE 4 - 서류 초안 작성:
+사용자가 서류 작성을 요청하면:
+- 해당 기관의 공식 양식 구조에 맞춰 초안 작성
+- 필수 항목은 구체적으로 작성
+- 선택 항목은 예시와 함께 제공
+- 공식 링크 함께 제공
+
+RULE 5 - 다국어 서류 지원:
+동일 서류의 다국어 버전이 있으면 모두 링크 제공:
+예) NMPA 신청서 (중국어) + 영문 가이드 동시 제공
+
 CRITICAL: Never guess regulation numbers. Answer ALL parts of the user question.
 Regulatory errors have serious legal and safety consequences.`;
 }

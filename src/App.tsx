@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
   Send, Globe, Sun, Moon, Search, Layers, ShieldAlert,
   FileText, Activity, Box, FileCheck, Users, LogOut,
@@ -374,75 +374,36 @@ export default function App() {
         .slice(-8)
         .map(m => ({ role: m.role as 'user'|'assistant', content: m.content }));
 
-      // ── Gemini 1.5 Flash API 호출 (무료 tier) ──
+      // ── Groq API 호출 (Vercel 서버 경유) ──
       const systemPrompt = buildSystemPrompt(activeModule, activeAgency, language);
+      const historyMessages = history.slice(-6).map(m => ({
+        role: m.role === 'assistant' ? 'assistant' : 'user',
+        content: m.content,
+      }));
 
-      const geminiContents = [
-        { role: 'user',  parts: [{ text: systemPrompt }] },
-        { role: 'model', parts: [{ text: 'Understood. I am GlobalRegAI. I will provide precise, well-structured regulatory guidance following all accuracy rules and citation requirements.' }] },
-        ...history.slice(-6).map(m => ({
-          role: m.role === 'assistant' ? 'model' : 'user',
-          parts: [{ text: m.content }],
-        })),
-        { role: 'user', parts: [{ text: text + fileCtx }] },
-      ];
+      const apiRes = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          system: systemPrompt,
+          messages: [...historyMessages, { role: 'user', content: text + fileCtx }],
+        }),
+      });
 
-      // ── Gemini API — 3키 자동 로테이션 + 429시 다음 키로 재시도 ──
-      const GEMINI_BODY = {
-        contents: geminiContents,
-        generationConfig: { maxOutputTokens: 2048, temperature: 0.2, topP: 0.8, topK: 40 },
-        safetySettings: [
-          { category: 'HARM_CATEGORY_HARASSMENT',        threshold: 'BLOCK_NONE' },
-          { category: 'HARM_CATEGORY_HATE_SPEECH',       threshold: 'BLOCK_NONE' },
-          { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_NONE' },
-          { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_NONE' },
-        ],
-      };
-
-      // 사용 가능한 키 목록 수집
-      const availableKeys = [
-        import.meta.env.VITE_GEMINI_API_KEY_1,
-        import.meta.env.VITE_GEMINI_API_KEY_2,
-        import.meta.env.VITE_GEMINI_API_KEY_3,
-        import.meta.env.VITE_GEMINI_API_KEY_4,
-        import.meta.env.VITE_GEMINI_API_KEY_5,
-        import.meta.env.VITE_GEMINI_API_KEY,
-      ].filter((k): k is string => Boolean(k) && k.startsWith('AIza'));
-
-      let geminiData: any = null;
-      let lastError = '';
-
-      // 각 키로 순서대로 시도 — 429면 다음 키로 넘어감
-      for (let i = 0; i < availableKeys.length; i++) {
-        const keyToUse = availableKeys[(geminiKeyIndex + i) % availableKeys.length];
-        const res = await fetch(
-          `/api/gemini`,
-          { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(GEMINI_BODY) }
-        );
-        geminiData = await res.json();
-        if (!geminiData.error) { geminiKeyIndex = (geminiKeyIndex + i + 1) % availableKeys.length; break; }
-        lastError = geminiData.error.message || '';
-        const is429 = lastError.includes('429') || lastError.includes('RESOURCE_EXHAUSTED') || lastError.includes('TooManyRequests') || lastError.includes('quota');
-        if (!is429) break; // 429가 아닌 오류면 재시도 불필요
-        // 429면 다음 키로 계속
-      }
+      const apiData = await apiRes.json();
 
       // ── 응답 처리 ──
       let reply = '';
-      if (geminiData?.candidates?.[0]?.content?.parts?.[0]?.text) {
-        reply = geminiData.candidates[0].content.parts[0].text;
+      if (apiData.reply) {
+        reply = apiData.reply;
         if (reply.length < 80) {
           reply += '\n\n*For more detailed guidance, please specify your product type, target market, and regulatory pathway.*';
         }
-      } else if (geminiData?.error) {
-        const errMsg = geminiData.error.message || '';
-        const is429 = errMsg.includes('429') || errMsg.includes('RESOURCE_EXHAUSTED') || errMsg.includes('TooManyRequests') || errMsg.includes('quota');
+      } else if (apiData.error) {
+        const errMsg = apiData.error || '';
+        const is429 = errMsg.includes('rate') || errMsg.includes('limit') || errMsg.includes('429');
         if (is429) {
-          reply = '⚠️ **All API keys are temporarily rate-limited.** Please wait a few minutes and try again.';
-        } else if (errMsg.includes('API_KEY') || errMsg.includes('invalid')) {
-          reply = '⚠️ **Configuration error.** Please contact: uk.dscheon@gmail.com';
-        } else if (errMsg.includes('not found') || errMsg.includes('404')) {
-          reply = '⚠️ **Model not available.** Please contact: uk.dscheon@gmail.com';
+          reply = '⚠️ **요청이 너무 많습니다. 잠시 후 다시 시도해 주세요.**\n\nAll API keys are temporarily rate-limited. Please wait a moment.';
         } else {
           reply = `⚠️ **Service issue.** Please try again. (${errMsg.substring(0, 100)})`;
         }

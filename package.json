@@ -1,5 +1,5 @@
-{
-  "name": "globalregai",
+﻿{
+  "name": "globalregai",`n  "type": "module",
   "private": true,
   "homepage": "https://globalregai.info",
   "version": "1.0.0",

@@ -269,24 +269,51 @@ UKCA 마킹 안내: https://www.gov.uk/guidance/using-the-ukca-marking
 UK 법령 검색: https://www.legislation.gov.uk
 
 [한국 MFDS 공식 서류]
-MFDS 전자민원 시스템: https://emed.mfds.go.kr
-의료기기 허가신청서: https://emed.mfds.go.kr/#/
+MFDS 공식 사이트(영문): https://www.mfds.go.kr/eng/index.do
+MFDS 전자민원 시스템(emed): https://emed.mfds.go.kr
+의료기기 허가·신고·심사: https://emed.mfds.go.kr/#/
+의료기기 승인 절차 안내: https://www.mfds.go.kr/eng/wpge/m_39/denofile.do
 의약품 허가신청: https://emed.mfds.go.kr
-화장품 신고: https://emed.mfds.go.kr
-MFDS 법령/고시 전체: https://www.mfds.go.kr/brd/m_218/list.do
-MFDS 공식 사이트: https://www.mfds.go.kr
-의료기기 정보포털: https://udiportal.mfds.go.kr
-GMP 신청 안내: https://emed.mfds.go.kr
+의약품 법령/규정(영문): https://www.mfds.go.kr/eng/brd/m_18/list.do
+화장품 신고·등록: https://emed.mfds.go.kr
+식품 규정(영문): https://www.mfds.go.kr/eng/brd/m_15/list.do
 건강기능식품 신고: https://www.mfds.go.kr/hfoodi/index.do
+MFDS 법령·고시 전체: https://www.mfds.go.kr/brd/m_218/list.do
+의료기기 UDI 포털: https://udiportal.mfds.go.kr
+한국의약품약전(KP 12판): https://www.mfds.go.kr/eng/brd/m_18/list.do
+GMP 신청·관리: https://emed.mfds.go.kr
+임상시험 승인(CRIS): https://cris.nih.go.kr
+핵심 정보:
+- 의료기기: 1~4등급 | 1등급=신고 | 2~4등급=허가
+- 의약품: 약사법 | GMP 의무 | 재심사 제도
+- 화장품: 화장품법 | 기능성화장품=심사 | 일반화장품=신고
+- 건강기능식품: 건강기능식품법 | 개별인정형=허가 | 고시형=신고
+- WHO Listed Authority(WLA) 2025년 전기능 등재
+- 외국 제조사: 수입업 허가 + 품목허가 필요
+- MDSAP 참여국 (2020년~)
 
 [일본 PMDA/MHLW 공식 서류]
 PMDA 공식 사이트: https://www.pmda.go.jp
 PMDA 영문 사이트: https://www.pmda.go.jp/english
-PMDA 의료기기 신청 안내: https://www.pmda.go.jp/english/review-services/reviews/0001.html
+PMDA 의료기기 신청·승인 안내: https://www.pmda.go.jp/english/review-services/reviews/0004.html
+PMDA QMS(ISO13485) 요구사항: https://www.pmda.go.jp/english/review-services/regulatory-info/0004.html
+PMDA 사전상담 서비스: https://www.pmda.go.jp/english/review-services/consultations/0001.html
 PMDA 의약품 신청 안내: https://www.pmda.go.jp/english/review-services/reviews/0002.html
+PMDA 외국 제조소 등록: https://www.pmda.go.jp/english/review-services/reviews/0003.html
 MHLW 공식 사이트: https://www.mhlw.go.jp/english
-일본 PMD법 원문: https://www.japaneselawtranslation.go.jp
-주의: PMDA 모든 신청서는 일본어 제출 필수 / J-MAH(일본 내 허가 보유자) 통해 신청
+MHLW MO169 (QMS 요건 영문): https://www.pmda.go.jp/english/review-services/regulatory-info/0004.html
+일본 PMD법 영문 번역: https://www.japaneselawtranslation.go.jp
+JMDN 코드 검색: https://www.pmda.go.jp/english/review-services/reviews/0004.html
+IDATEN 시스템(신청 추적): https://www.pmda.go.jp
+핵심 정보:
+- 의료기기: Class I(일반) = 신고 | Class II(관리)=인증(RCB) | Class III~IV(고도관리)=PMDA 승인
+- 의약품: PMD법 | MHLW 최종 승인 | PMDA 심사
+- 화장품: 신고 불필요 | 성분 기준 준수 | 지정성분 표시 의무
+- J-MAH(Marketing Authorization Holder) 필수 | 외국 제조소 PMDA 직접 등록 가능
+- 2024년 9월~: 외국 기업도 CTD 영어 제출 허용(의약품)
+- MDSAP 참여국 | PIC/S 가입국
+- QMS: MHLW MO169 (ISO 13485:2016 동등, 2024년 3월 발효)
+- HFE/UE: JIS T 62366-1:2022 의무 (2024년 4월~)
 
 [브라질 ANVISA 공식 서류]
 ANVISA 공식 사이트: https://www.gov.br/anvisa/en
@@ -297,20 +324,270 @@ ANVISA 전자신청 시스템(Solicita): https://solicita.anvisa.gov.br
 ANVISA GMP 인증: https://portal.anvisa.gov.br/en/companies
 주의: 외국 기업은 브라질 내 파트너사(CNPJ 보유) 통해 신청 필수
 
-[동아시아 기타 국가]
-대만 TFDA: https://www.fda.gov.tw/EN
-대만 의료기기 신청: https://www.fda.gov.tw/EN/lawContent.aspx?cid=565
-홍콩 DHAHK 의약품: https://www.drugoffice.gov.hk/eps/do/en/consumer/index.html
-홍콩 의료기기: https://www.mdco.gov.hk
-싱가포르 HSA: https://www.hsa.gov.sg
-싱가포르 의료기기: https://www.hsa.gov.sg/medical-devices
-싱가포르 의약품: https://www.hsa.gov.sg/therapeutic-products
-말레이시아 NPRA: https://www.npra.gov.my
-인도네시아 BPOM: https://www.pom.go.id
-태국 FDA: https://www.fda.moph.go.th/en
-베트남 DAV: https://dav.gov.vn
-인도 CDSCO: https://cdsco.gov.in/opencms/opencms/en/Home/
-ASEAN 의료기기 공통지침(AMDD): https://asean.org/asean-economic-community/sectoral-bodies-under-the-purview-of-aem/services/healthcare-services/
+[필리핀 FDA 공식 서류]
+필리핀 FDA 공식 사이트: https://www.fda.gov.ph
+온라인 신청 시스템(eLAS): https://elas.fda.gov.ph
+LTO (License to Operate) 신청: https://fda.gov.ph/license-to-operate/
+의료기기 등록(CDRRHR): https://fda.gov.ph/medical-devices/
+의약품 등록: https://fda.gov.ph/drugs-and-vaccines/
+식품 등록(CFRR): https://fda.gov.ph/registration-of-food-products/
+건강기능식품(FS) 등록: https://fda.gov.ph/food-and-drug-regulation/food-supplement/
+화장품 신고(CPN): https://fda.gov.ph/cosmetics/
+GMP 인증 신청: https://fda.gov.ph/good-manufacturing-practice/
+수입 허가(Import Permit): https://fda.gov.ph/import-permit/
+양식 전체 다운로드: https://fda.gov.ph/downloadable-forms/
+IVD 등록 안내: https://fda.gov.ph/in-vitro-diagnostics/
+핵심 정보:
+- LTO = License to Operate → 반드시 먼저 취득 (제조/수입/도매업체)
+- CFRR = Certificate of Food and Drug Registration (제품등록증)
+- CDRRHR = Certificate of Device Registration (의료기기 등록증)
+- 의료기기: Class A(저위험)~D(최고위험) | IVD 별도 분류
+- 건강기능식품(Food Supplement): CFRR 별도 절차
+- 화장품: CPN(Cosmetic Product Notification) = 신고제
+- 수수료: LTO PHP 5,000~20,000 / 제품등록 PHP 3,000~10,000 (2024년 5배 인상 예정)
+- 외국 제조사: 필리핀 내 공인대리인(Authorized Representative) 필수
+- 모든 신청서 영어 작성 가능
+- 할랄 인증: IDCP 또는 OIMH 통해 별도 취득
+
+[대만 TFDA 공식 서류]
+TFDA 공식 사이트: https://www.fda.gov.tw/EN
+의료기기 등록 신청: https://www.fda.gov.tw/EN/lawContent.aspx?cid=565
+의약품 신청: https://www.fda.gov.tw/EN/lawContent.aspx?cid=558
+화장품 신고: https://www.fda.gov.tw/EN/lawContent.aspx?cid=567
+식품 신고: https://www.fda.gov.tw/EN/lawContent.aspx?cid=560
+전자신청 시스템: https://enews.fda.gov.tw
+핵심 정보: 의료기기 Class I~IV | 외국 제조사 = 대만 내 등록대리인 필수 | 중국어 번체 제출 필수
+
+[싱가포르 HSA 공식 서류]
+HSA 공식 사이트: https://www.hsa.gov.sg
+의료기기 신청 (MEDICS): https://www.hsa.gov.sg/medical-devices
+의약품 신청: https://www.hsa.gov.sg/therapeutic-products
+화장품 신고: https://www.hsa.gov.sg/cosmetic-products
+식품보충제: https://www.hsa.gov.sg/health-products-regulation
+전자신청 포털(PRISM): https://eservice.hsa.gov.sg
+HSA 가이드라인: https://www.hsa.gov.sg/docs/default-source/hprg-mdb/guidance-documents
+핵심 정보: ASEAN 공통 의료기기 기준 적용 | 영어 제출 가능 | Class A~D 분류
+
+[말레이시아 NPRA 공식 서류]
+NPRA 공식 사이트: https://www.npra.gov.my
+의약품/의료기기 등록: https://www.npra.gov.my/index.php/en/registration
+전자신청 시스템(Quest3+): https://quest3plus.bpfk.gov.my
+의료기기 청(MDA): https://www.mda.gov.my
+화장품 신고: https://www.npra.gov.my/index.php/en/cosmetics
+핵심 정보: 의약품 = NPRA | 의료기기 = MDA 별도 관리 | 말레이어 또는 영어 제출
+
+[인도네시아 BPOM 공식 서류]
+BPOM 공식 사이트: https://www.pom.go.id
+전자신청 시스템(e-BPOM): https://e-bpom.pom.go.id
+의약품 등록(e-Registrasi Obat): https://e-ro.pom.go.id
+의료기기·PKRT 신청(e-ASIA): https://e-asia.pom.go.id
+화장품 신고(e-BPOM Kosmetik): https://e-bpom.pom.go.id
+식품 등록(e-BPOM Pangan): https://e-bpom.pom.go.id
+GMP 인증: https://www.pom.go.id
+할랄 인증(BPJPH): https://ptsp.halal.go.id
+핵심 정보:
+- 의약품: eCTD 제출 | 현지 MAH(Marketing Authorization Holder) 필수
+- 의료기기(Alat Kesehatan): Class A~D | MOH(보건부) 및 BPOM 공동 관리
+- 화장품: 사전신고제 | BPOM 신고번호 취득 필수
+- 식품보충제(Suplemen Kesehatan): BPOM 등록 필수
+- 할랄 인증: 2024년~ 의약품·의료기기·화장품 할랄 표시 의무화 추진 중
+- 인도네시아어(bahasa Indonesia) 제출 필수
+- 외국 제조사: 인도네시아 법인 Local Partner 필수 (SIK 또는 PBF 허가 보유)
+- GMP: WHO GMP 기준 | BPOM 실사
+
+[태국 FDA 공식 서류]
+태국 FDA 공식 사이트: https://www.fda.moph.go.th/en
+전자신청 포털(PRIVUS): https://privus.fda.moph.go.th
+의약품 신청: https://www.fda.moph.go.th/en/drug
+의료기기 신청: https://www.fda.moph.go.th/en/medDevice
+화장품 신고: https://www.fda.moph.go.th/en/cosme
+식품 등록: https://www.fda.moph.go.th/en/food
+건강기능식품(Health Products): https://www.fda.moph.go.th/en/hprod
+SaMD/AI 가이드라인: https://www.fda.moph.go.th/en/medDevice
+핵심 정보:
+- 의료기기: Class I(저위험)~III(고위험) | Class I=신고 | II~III=허가
+- SaMD(소프트웨어 의료기기): 2024년 규제 가이드라인 발표
+- 의약품: 태국 FDA 허가 필수 | 수입허가 + 제품등록
+- 화장품: 사전신고제 | 성분 기준 준수
+- 건강기능식품: 별도 등록 절차
+- 외국 제조사: 태국 내 허가보유자(Local Importer) 필수
+- 태국어 또는 영어 제출 가능
+- 임상시험: EC(윤리위원회) 승인 필수 | 수수료: 기본 4,000 Baht~
+
+[베트남 DAV/MOH 공식 서류]
+DAV(의약품청) 공식 사이트: https://dav.gov.vn
+의약품 등록(DAV): https://dav.gov.vn/dang-ky-thuoc
+의료기기 신청(MOH-VietRAS): https://vietras.moh.gov.vn
+화장품 신고(공공서비스 포털): https://dichvucong.gov.vn
+MOH 전자신청: https://dichvucong.moh.gov.vn
+보건부(MOH) 공식: https://moh.gov.vn
+핵심 정보:
+- 의료기기: Class A(저위험)~D(최고위험) | MOH 관할
+- Class A = 신고 | Class B~D = 허가 (MOH 심사)
+- 의약품: DAV(Drug Administration of Vietnam) 관할 | eCTD 도입 중
+- 화장품: 사전신고제 | 성분 기준 준수
+- 베트남어 번역 필수 (공증 권장)
+- 외국 제조사: 베트남 법인 대리인 필수
+- 2024년~: 의료기기 규정 대폭 개정 | VietRAS 시스템 전면 도입
+- GMP: WHO GMP 기준 | 베트남 GMP 실사
+
+[홍콩 공식 서류]
+의약품(DHAHK): https://www.drugoffice.gov.hk/eps/do/en/consumer/index.html
+의료기기(MDCO): https://www.mdco.gov.hk
+화장품: https://www.customs.gov.hk/en/trade_facilitation/manifest/cosmetics/index.html
+식품안전: https://www.cfs.gov.hk/english
+핵심 정보: 의료기기 자발적 등록 (MDCO) | 영어 또는 중국어 번체 제출
+
+[인도 CDSCO 공식 서류]
+CDSCO 공식 사이트: https://cdsco.gov.in/opencms/opencms/en/Home/
+전자신청 포털(SUGAM): https://sugam.gov.in
+의약품 신청(New Drug): https://cdsco.gov.in/opencms/opencms/en/Drugs/New-Drugs/
+의료기기 신청: https://cdsco.gov.in/opencms/opencms/en/Medical-Device-Diagnostics/
+IVD 체외진단 신청: https://cdsco.gov.in/opencms/opencms/en/Medical-Device-Diagnostics/
+화장품 신고: https://cdsco.gov.in/opencms/opencms/en/Cosmetics/
+임상시험 신청: https://cdsco.gov.in/opencms/opencms/en/ClinicalTrial/OverView/
+의약품 관련 규정(D&C Act): https://cdsco.gov.in/opencms/opencms/en/Drugs/Acts-Rules-Regulations/
+인도 중앙의약품표준통제기구: https://cdsco.gov.in
+핵심 정보:
+- 의료기기: Class A(저위험)~D(최고위험) | MDR 2017 (Medical Devices Rules 2017)
+- Class A~B = CDSCO 신고/등록 | Class C~D = CDSCO 허가
+- 의약품: New Drug Application (NDA) | CDSCO Form 44 제출
+- 화장품: Drugs and Cosmetics Act | 라벨링 규정 준수
+- 외국 제조사: 인도 내 Indian Agent(대리인) 필수
+- 영어 제출 가능
+- GMP: WHO GMP 기준 | Schedule M (인도 GMP)
+- SUGAM 포털: 온라인 신청 통합 플랫폼
+- 2024년: 의료기기 등록 전면 의무화 완료
+
+[캐나다 Health Canada 공식 서류]
+Health Canada 공식 사이트: https://www.canada.ca/en/health-canada.html
+의료기기 신청: https://www.canada.ca/en/health-canada/services/drugs-health-products/medical-devices.html
+의약품 신청: https://www.canada.ca/en/health-canada/services/drugs-health-products/drug-products.html
+화장품 신고: https://www.canada.ca/en/health-canada/services/consumer-product-safety/cosmetics.html
+전자신청(HPFB): https://hpr-rps.hres.ca
+핵심 정보: 의료기기 Class I~IV | MDSAP 참여국 | 영어 또는 프랑스어
+
+[호주 TGA 공식 서류]
+TGA 공식 사이트: https://www.tga.gov.au
+의료기기 신청: https://www.tga.gov.au/how-we-regulate/manufacturing/overseas-manufacturers-and-exporters
+의약품 신청: https://www.tga.gov.au/resources/resource/forms/prescription-medicines-registration-application
+화장품: https://www.tga.gov.au/products/cosmetics
+전자신청(TBS): https://www.tga.gov.au/online-services
+핵심 정보: 의료기기 Class I~III | MDSAP 참여국 | ARTG 등재 필수 | 영어 제출
+
+[사우디아라비아 SFDA 공식 서류]
+SFDA 공식 사이트: https://www.sfda.gov.sa/en
+SFDA 전자신청 시스템(GHAD): https://ghad.sfda.gov.sa
+SFDA 의약품 등록(SDR): https://sdr.sfda.gov.sa
+SFDA 의료기기 등록(MDMA): https://ghad.sfda.gov.sa
+SFDA 화장품 신고: https://ghad.sfda.gov.sa
+SFDA 식품 등록: https://ghad.sfda.gov.sa
+SFDA 법령/규정: https://www.sfda.gov.sa/en/regulations
+핵심 정보:
+- WHO 성숙도 Level 4 | ICH 정회원국 (2021년~)
+- 의료기기: MDMA2 (Technical File Assessment) 필수 | Class I~IV
+- 의약품: eCTD 제출 | 가격 심사 별도
+- 화장품: SFDA 신고 필수
+- GCC 국가들의 기준 참조국 역할
+- 외국 제조사: 사우디 내 Authorized Representative(AR) 필수 | AR 라이선스 연간 갱신
+- 영어 제출 가능 | 아랍어 라벨링 필수
+- CE/FDA 선승인 필요 없음 (자체 기술문서 심사)
+
+[UAE MOHAP/EDE 공식 서류]
+EDE(Emirates Drug Establishment) 공식 사이트: https://www.ede.gov.ae
+MOHAP 공식 사이트: https://mohap.gov.ae
+의료기기 등록(EDE): https://www.ede.gov.ae
+의약품 등록: https://mohap.gov.ae/en/services
+두바이 DHA 규제: https://www.dha.gov.ae
+아부다비 DOH 규제: https://www.doh.gov.ae
+화장품 신고: https://www.ede.gov.ae
+핵심 정보:
+- 2025년 1월~ EDE가 MOHAP 의약품/의료기기 규제 권한 이관 받음
+- 의료기기: Class I~IV | CE 또는 FDA 승인 보유 시 fast-track
+- 외국 제조사: UAE 내 LAR(Local Authorized Representative) 필수 | MOHAP 라이선스 보유
+- 제품등록 유효기간: 5년
+- 등록 수수료: 의료기기 USD 1,360 / 제조사 등록 USD 2,859
+- 아랍에밀리트에는 두바이(DHA), 아부다비(DOH), 연방(EDE) 별도 관할
+
+[GCC 공통 규제 (걸프협력회의)]
+GCC 의약품 공통 심사: https://www.gcc-sg.org
+사우디(SFDA) 승인 = GCC 상호인정 검토 가능
+쿠웨이트 MOH: https://www.moh.gov.kw
+카타르 MOPH: https://www.moph.gov.qa
+바레인 NHRA: https://www.nhra.bh
+오만 MOH: https://www.moh.gov.om
+핵심 정보: 사우디 SFDA 승인 후 GCC 타 국가 상호인정 활용 가능
+
+[러시아 Roszdravnadzor 공식 서류]
+Roszdravnadzor 공식 사이트: https://www.roszdravnadzor.gov.ru
+의료기기 등록 포털: https://www.roszdravnadzor.gov.ru/services/misearch
+의약품 등록: https://grls.rosminzdrav.ru
+의약품 통합 정보 시스템: https://grls.rosminzdrav.ru
+핵심 정보:
+- 의료기기: Roszdravnadzor 등록 필수 | 러시아어 전체 문서 필수
+- 의약품: 국가 등록 (GR) | 임상시험 러시아 현지 또는 외국 데이터 인정
+- 화장품: Rospotrebnadzor 관할 | 신고제
+- 외국 제조사: 러시아 법인 대리인 필수
+- EAEU(유라시아경제연합) 공통 규정 적용 가능 (러시아+벨라루스+카자흐스탄+아르메니아+키르기스스탄)
+- 현재 제재 상황으로 절차 변동 가능 → 전문가 확인 필요
+
+[독일/EU 핵심 기관 공식 서류]
+독일 BfArM(의약품): https://www.bfarm.de/EN
+독일 BfR(화학/식품 위해평가): https://www.bfr.bund.de/en
+독일 ZLG(인증기관): https://www.zlg.de/en
+TUV SUD(인증): https://www.tuvsud.com
+TUV Rheinland(인증): https://www.tuv.com
+독일 DIHK 무역: https://www.dihk.de
+핵심 정보: EU MDR/IVDR/EMA 규정 동일 적용 | CE 마킹 필수
+
+[프랑스 ANSM 공식 서류]
+ANSM 공식 사이트: https://ansm.sante.fr/en
+의료기기 감시: https://ansm.sante.fr/en/our-activities/medical-devices
+의약품 허가: https://ansm.sante.fr/en/our-activities/medicine
+핵심 정보: EU EMA 중앙절차 + ANSM 국가절차 병행 | 프랑스어 라벨링 필수
+
+[터키 TITCK 공식 서류]
+TITCK 공식 사이트: https://www.titck.gov.tr/en
+의약품 등록: https://www.titck.gov.tr/en/departments/pharmaceutical
+의료기기 등록: https://www.titck.gov.tr/en/departments/medical-device
+화장품 신고: https://www.titck.gov.tr/en/departments/cosmetics
+전자신청(TABS): https://tabs.titck.gov.tr
+핵심 정보:
+- 의료기기: CE 마킹 인정 + 터키 추가 요건
+- 의약품: EU CTD 형식 | 터키어 라벨링 필수
+- 화장품: EU 기준 준용 | 사전신고제
+- 외국 제조사: 터키 내 대리인(MAH) 필수
+
+[이스라엘 MOH/IMOH 공식 서류]
+이스라엘 MOH 공식 사이트: https://www.health.gov.il/English
+의료기기 등록(IMOH): https://www.health.gov.il/English/MinistryUnits/IMOH
+의약품 등록: https://www.health.gov.il/English/MinistryUnits/PCD
+핵심 정보:
+- 의료기기: FDA/CE 승인 보유 시 신속 경로 가능
+- 의약품: 외국 승인 기반 reliance 방식
+- 영어 제출 가능
+
+[멕시코 COFEPRIS 공식 서류]
+COFEPRIS 공식 사이트: https://www.gob.mx/cofepris
+전자신청 포털: https://www.cofepris.gob.mx
+의료기기 등록(Dispositivos Medicos): https://www.gob.mx/cofepris/acciones-y-programas/dispositivos-medicos
+의약품 등록: https://www.gob.mx/cofepris/acciones-y-programas/medicamentos
+화장품 신고: https://www.gob.mx/cofepris/acciones-y-programas/cosmeticos
+핵심 정보:
+- 의료기기: Class I~III | FDA/CE 승인 인정 (reliance)
+- 의약품: NOM 기준 | 스페인어 라벨링 필수
+- 외국 제조사: 멕시코 법인 대리인 필수
+
+[폴란드/중동부 유럽 EU 공식 서류]
+폴란드 Urząd Rejestracji: https://www.urpl.gov.pl/en
+헝가리 OGYÉI: https://ogyei.gov.hu/en
+체코 SUKL: https://www.sukl.eu/en
+핵심 정보: EU EMA/MDR 공통 규정 적용 | 각국 언어 라벨링 추가 필요
+
+[아세안 공통 서류]
+ASEAN 의료기기 공통지침(AMDD): https://www.asean.org/asean-economic-community/sectoral-bodies-under-the-purview-of-aem/services/healthcare-services/
+ASEAN 화장품 지침(ACD): https://asean.org/asean-cosmetics-directive/
+ASEAN 의약품 공통기술문서: https://www.asean.org/asean-common-technical-dossier/
 
 [국제 표준 공식 서류]
 ISO 10993 생물학적 평가: https://www.iso.org/standard/68936.html

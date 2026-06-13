@@ -222,58 +222,113 @@ ${koGuide}
 OFFICIAL DOCUMENT LINKS DATABASE (서류 요청 시 반드시 해당 링크 제공):
 
 [중국 NMPA 공식 서류]
-GLP 인증서 양식: https://www.nmpa.gov.cn/directory/web/nmpa/images/1674115799236082348.docx
-의료기기 등록 신청서: https://zwfw.nmpa.gov.cn
-의료기기 기술요구서 가이드: https://www.nmpa.gov.cn/ylqx/ylqxgzdt/
-의약품 등록 신청서: https://zwfw.nmpa.gov.cn
-화장품 등록 신청: https://zwfw.nmpa.gov.cn
-NMPA 전자신청 시스템: https://zwfw.nmpa.gov.cn
+NMPA 전자신청 시스템 (모든 신청서): https://zwfw.nmpa.gov.cn
 NMPA 공식 사이트: https://www.nmpa.gov.cn
-GB/T 16886 (ISO 10993 중국 동등): http://www.gb688.cn
+NMPA 영문 사이트: https://english.nmpa.gov.cn
+GLP 인증서 양식: https://www.nmpa.gov.cn/directory/web/nmpa/images/1674115799236082348.docx
+의료기기 등록관리 규정(Order 47): https://english.nmpa.gov.cn/2024-06/05/c_1049323.htm
+의료기기 기술요구서 가이드: https://www.nmpa.gov.cn/ylqx/ylqxgzdt/
+의약품 등록관리 규정: https://english.nmpa.gov.cn/lawsandregulations.html
+화장품 신고/등록: https://zwfw.nmpa.gov.cn
+중국 의료기기 GMP(2026년 발효): https://english.nmpa.gov.cn/news.html
+GB/T 16886 (ISO 10993 동등 기준): http://www.gb688.cn
+중국 표준 검색: https://std.samr.gov.cn
 
 [미국 FDA 공식 서류]
+FDA 전체 양식 목록: https://www.fda.gov/about-fda/reports-manuals-forms/forms
+의료기기 양식 모음: https://www.fda.gov/about-fda/reports-manuals-forms/forms?Page=7
 510(k) 양식 FDA 3514: https://www.fda.gov/media/72421/download
 NDA 신청서 FDA 356h: https://www.fda.gov/media/71420/download
 IDE 신청서 FDA 1812: https://www.fda.gov/media/72428/download
-PMA 신청서: https://www.fda.gov/medical-devices/premarket-approval-pma/pma-submissions
+PMA 신청서 안내: https://www.fda.gov/medical-devices/premarket-approval-pma/pma-submissions
 eSTAR 전자제출: https://www.fda.gov/medical-devices/how-study-and-market-your-device/estar
-FDA eCFR: https://www.ecfr.gov
+FDA eCFR (연방규정집): https://www.ecfr.gov
 FDA 가이던스 문서: https://www.fda.gov/regulatory-information/search-fda-guidance-documents
 CDER 의약품 신청: https://www.fda.gov/drugs/development-approval-process-drugs
+FDA 화장품 MoCRA: https://www.fda.gov/cosmetics/cosmetics-laws-regulations/modernization-cosmetics-regulation-act-2022-mocra
 
 [EU EMA/CE 공식 서류]
-CE DoC 양식: https://ec.europa.eu/growth/single-market/ce-marking_en
-MDR 적합성선언서 템플릿: https://ec.europa.eu/health/md_sector/new_regulations_en
-CPNP 화장품 신고: https://webgate.ec.europa.eu/cpnp
+EMA 전자신청 양식(eAF) PLM 포털: https://plm.ema.europa.eu
+EMA 신청 양식 전체: https://www.ema.europa.eu/en/human-regulatory/marketing-authorisation/applying-marketing-authorisation
+CE 마킹 공식 안내: https://single-market-economy.ec.europa.eu/single-market/ce-marking_en
+MDR/IVDR 적합성선언서: https://ec.europa.eu/health/md_sector/new_regulations_en
 EUDAMED 의료기기 DB: https://ec.europa.eu/tools/eudamed
-EMA 신청 양식: https://www.ema.europa.eu/en/human-regulatory/marketing-authorisation/applying-marketing-authorisation
+CPNP 화장품 신고: https://webgate.ec.europa.eu/cpnp
 EudraLex GMP 가이드: https://health.ec.europa.eu/medicinal-products/eudralex_en
+EMA 소아과 PIP 양식: https://www.ema.europa.eu/en/human-regulatory-overview/research-development/paediatric-medicines-research-development/paediatric-investigation-plans/paediatric-investigation-plans-templates-forms
+NANDO (인증기관 DB): https://ec.europa.eu/growth/tools-databases/nando/
+EU 법령 전체: https://eur-lex.europa.eu
+
+[영국 MHRA 공식 서류]
+MHRA 공식 사이트: https://www.gov.uk/government/organisations/medicines-and-healthcare-products-regulatory-agency
+MHRA 의료기기 등록(DORS): https://pard.mhra.gov.uk
+MHRA 양식 모음: https://info.mhra.gov.uk/forms.aspx
+MHRA 의약품 포털: https://products.mhra.gov.uk
+MHRA 임상시험 신청(IRAS): https://www.myresearchproject.org.uk
+UKCA 마킹 안내: https://www.gov.uk/guidance/using-the-ukca-marking
+UK 법령 검색: https://www.legislation.gov.uk
 
 [한국 MFDS 공식 서류]
-의료기기 허가신청서: https://emed.mfds.go.kr
+MFDS 전자민원 시스템: https://emed.mfds.go.kr
+의료기기 허가신청서: https://emed.mfds.go.kr/#/
 의약품 허가신청: https://emed.mfds.go.kr
-화장품 신고: https://www.mfds.go.kr
-MFDS 민원신청: https://emed.mfds.go.kr
-의료기기 전자민원: https://emed.mfds.go.kr/#/
-GMP 신청서: https://emed.mfds.go.kr
-MFDS 법령/고시: https://www.mfds.go.kr/brd/m_218/list.do
+화장품 신고: https://emed.mfds.go.kr
+MFDS 법령/고시 전체: https://www.mfds.go.kr/brd/m_218/list.do
+MFDS 공식 사이트: https://www.mfds.go.kr
+의료기기 정보포털: https://udiportal.mfds.go.kr
+GMP 신청 안내: https://emed.mfds.go.kr
+건강기능식품 신고: https://www.mfds.go.kr/hfoodi/index.do
 
-[일본 PMDA 공식 서류]
-의료기기 신청: https://www.pmda.go.jp/english/review-services/reviews/0001.html
-의약품 신청: https://www.pmda.go.jp/english/review-services/reviews/0002.html
-PMDA 공식: https://www.pmda.go.jp
+[일본 PMDA/MHLW 공식 서류]
+PMDA 공식 사이트: https://www.pmda.go.jp
+PMDA 영문 사이트: https://www.pmda.go.jp/english
+PMDA 의료기기 신청 안내: https://www.pmda.go.jp/english/review-services/reviews/0001.html
+PMDA 의약품 신청 안내: https://www.pmda.go.jp/english/review-services/reviews/0002.html
+MHLW 공식 사이트: https://www.mhlw.go.jp/english
+일본 PMD법 원문: https://www.japaneselawtranslation.go.jp
+주의: PMDA 모든 신청서는 일본어 제출 필수 / J-MAH(일본 내 허가 보유자) 통해 신청
+
+[브라질 ANVISA 공식 서류]
+ANVISA 공식 사이트: https://www.gov.br/anvisa/en
+ANVISA 의료기기 안내: https://www.gov.br/anvisa/en/regulation-of-products/medical-devices
+ANVISA 의약품 안내: https://www.gov.br/anvisa/pt-br/english/regulation-of-products/drugs
+ANVISA 양식 및 템플릿: https://www.gov.br/anvisa/pt-br/english/regulation-of-products/active-pharmaceutical-ingredients/forms-and-templates
+ANVISA 전자신청 시스템(Solicita): https://solicita.anvisa.gov.br
+ANVISA GMP 인증: https://portal.anvisa.gov.br/en/companies
+주의: 외국 기업은 브라질 내 파트너사(CNPJ 보유) 통해 신청 필수
+
+[동아시아 기타 국가]
+대만 TFDA: https://www.fda.gov.tw/EN
+대만 의료기기 신청: https://www.fda.gov.tw/EN/lawContent.aspx?cid=565
+홍콩 DHAHK 의약품: https://www.drugoffice.gov.hk/eps/do/en/consumer/index.html
+홍콩 의료기기: https://www.mdco.gov.hk
+싱가포르 HSA: https://www.hsa.gov.sg
+싱가포르 의료기기: https://www.hsa.gov.sg/medical-devices
+싱가포르 의약품: https://www.hsa.gov.sg/therapeutic-products
+말레이시아 NPRA: https://www.npra.gov.my
+인도네시아 BPOM: https://www.pom.go.id
+태국 FDA: https://www.fda.moph.go.th/en
+베트남 DAV: https://dav.gov.vn
+인도 CDSCO: https://cdsco.gov.in/opencms/opencms/en/Home/
+ASEAN 의료기기 공통지침(AMDD): https://asean.org/asean-economic-community/sectoral-bodies-under-the-purview-of-aem/services/healthcare-services/
 
 [국제 표준 공식 서류]
 ISO 10993 생물학적 평가: https://www.iso.org/standard/68936.html
 ISO 13485 의료기기 QMS: https://www.iso.org/standard/59752.html
 ISO 14971 위험관리: https://www.iso.org/standard/72704.html
 ISO 22716 화장품GMP: https://www.iso.org/standard/36437.html
-ICH 가이드라인: https://www.ich.org/page/guidelines
+ISO 22000 식품안전: https://www.iso.org/standard/65464.html
+ISO 9001 품질경영: https://www.iso.org/standard/62085.html
+ICH 가이드라인 전체: https://www.ich.org/page/guidelines
+WHO 규제지원 도구: https://www.who.int/teams/health-product-and-policy-standards
 
-[REACH/화학물질]
+[화학물질/REACH]
 ECHA REACH 등록: https://echa.europa.eu/regulations/reach/registration
 ECHA C&L 신고: https://echa.europa.eu/regulations/clp/cl-inventory
 SDS 양식 가이드: https://echa.europa.eu/support/guidance-on-reach-and-clp-implementation/reach-guidance
+ECHA SCIP DB: https://echa.europa.eu/scip-database
+EPA TSCA 신청: https://www.epa.gov/tsca-inventory
+GHS SDS 국제기준: https://unece.org/ghs
 
 DOCUMENT PROVISION RULES (모든 서류에 예외 없이 적용):
 

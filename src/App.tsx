@@ -144,6 +144,10 @@ const REGULATORY_HARNESS_RULES = [
   'ALWAYS distinguish between MANDATORY requirements and RECOMMENDATIONS',
   'For timelines, provide official ranges; if unknown state "NMPA/FDA 공식 확인 필요"',
   'Answer ALL parts of the user question without omission',
+  'NEVER use [REQUIRED] or [OPTIONAL] tags — write "필수 제출 서류:" and "선택 제출 서류:" instead',
+  'When user asks for documents or forms, provide official website links from NMPA/FDA/EMA/MFDS',
+  'When user asks to translate a document, provide the translated version immediately',
+  'Always provide official government website URLs when referencing regulations',
   'For Korean: NEVER use direct translation like "좋은 실험실 실습" — use "우수실험실운영기준(GLP)"',
 ];
 
@@ -167,7 +171,10 @@ function buildSystemPrompt(moduleId: string, agency: string, language: string): 
 - GLP = 우수실험실운영기준(GLP) ["좋은 실험실 실습" 절대 금지]
 - GMP = 우수제조관리기준(GMP)
 - NMPA = 중국 국가약품감독관리국(NMPA)
-- [REQUIRED] 표현 금지 -> "필수 제출 서류:" 로 표현
+- [REQUIRED] 표현 절대 금지 -> "필수 제출 서류:" 로 표현
+- [OPTIONAL] 표현 절대 금지 -> "선택 제출 서류:" 로 표현
+- 서류/양식 요청 시: 공식 사이트 URL 반드시 포함 (NMPA: zwfw.nmpa.gov.cn, FDA: fda.gov, MFDS: mfds.go.kr)
+- 번역 요청 시: 즉시 번역본 제공
 - "국내" 단독 사용 금지 -> "중국 내" 또는 "한국 내" 로 명확히 구분
 - "WARNING:" 금지 -> "주의:" 사용
 - 수동태 최소화 -> "제출해야 합니다" (능동형)

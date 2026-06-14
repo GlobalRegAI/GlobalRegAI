@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
   Send, Globe, Sun, Moon, Search, Layers, ShieldAlert,
   FileText, Activity, Box, FileCheck, Users, LogOut,
@@ -744,7 +744,27 @@ export default function App() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef   = useRef<HTMLInputElement>(null);
 
-  useEffect(() => { setMessages([]); }, [activeModule]);
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      if (session?.user?.email) {
+        setIsAdmin(ADMIN_EMAILS.includes(session.user.email));
+        getUserTrialStatus(session.user.id).then(setTrialInfo);
+      }
+    });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, s) => {
+      setSession(s);
+      if (s?.user?.email) {
+        setIsAdmin(ADMIN_EMAILS.includes(s.user.email));
+        getUserTrialStatus(s.user.id).then(setTrialInfo);
+      } else { setIsAdmin(false); setTrialInfo(null); }
+    });
+    return () => subscription.unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    setMessages([]);
+  }, [activeModule]);
 
   useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
   useEffect(() => { document.documentElement.setAttribute('data-theme', theme); }, [theme]);

@@ -763,12 +763,7 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    const mod = MODULES.find(m => m.id === activeModule);
-    setMessages([{
-      role: 'assistant',
-      content: `## ${mod?.label} 규제 어시스턴트\n\n다음 내용을 도와드립니다:\n- **Q&A**: ${mod?.agencies.join(', ')} 요건 안내\n- **국가별 허가 요건** 비교 분석\n- **서류 초안** 자동 생성\n- **규제 변경사항** 모니터링\n- **제출 절차** 단계별 안내\n\n무엇을 도와드릴까요?`,
-      timestamp: new Date(),
-    }]);
+    setMessages([]);
   }, [activeModule]);
 
   useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
@@ -1036,15 +1031,7 @@ export default function App() {
           <div ref={messagesEndRef}/>
         </div>
 
-        {messages.length <= 1 && (
-          <div className="gra-quick-prompts">
-            {quickPrompts[activeView].map((p, i) => (
-              <button key={i} className="gra-quick-btn" onClick={() => sendMessage(p)}>
-                <ChevronDown size={13}/> {p}
-              </button>
-            ))}
-          </div>
-        )}
+
 
         <div className="gra-input-area">
           <input ref={fileInputRef} type="file" accept=".pdf,.doc,.docx,.txt,.xlsx" style={{display:'none'}} onChange={e => setUploadedFile(e.target.files?.[0]||null)} />

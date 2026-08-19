@@ -277,7 +277,8 @@ ${koGuide}
 OFFICIAL DOCUMENT LINKS DATABASE (서류 요청 시 반드시 해당 링크 제공):
 
 [중국 NMPA 공식 서류]
-NMPA 전자신청 시스템 (모든 신청서): https://zwfw.nmpa.gov.cn
+NMPA 전자신청 시스템 (모든 신청서): https://zwfw.nmpa.gov.cn/web/taskdir/01
+NMPA 전자신청 시스템 (기타 신청서): https://zwfw.nmpa.gov.cn/web/taskdir/sjsx
 NMPA 공식 사이트: https://www.nmpa.gov.cn
 NMPA 영문 사이트: https://english.nmpa.gov.cn
 GLP 인증서 양식: https://www.nmpa.gov.cn/directory/web/nmpa/images/1674115799236082348.docx
@@ -459,6 +460,12 @@ GMP 인증: https://www.pom.go.id
 식품 등록: https://www.fda.moph.go.th/en/food
 건강기능식품(Health Products): https://www.fda.moph.go.th/en/hprod
 SaMD/AI 가이드라인: https://www.fda.moph.go.th/en/medDevice
+Health Products: https://en.fda.moph.go.th/cat2-health-products
+How to Apply for Permission on Medical Devices?: https://en.fda.moph.go.th/entrepreneurs-medical-devices/category/how-to-apply-for-permission-on-medical-devices
+How to Apply for Drug Approval?: https://en.fda.moph.go.th/entrepreneurs-medicines/category/how-to-apply-for-drug-approval/
+How to Apply for Permission on Food?: https://en.fda.moph.go.th/entrepreneurs-food/category/how-to-apply-for-permission-on-food/
+How to Apply for Permission on Hazardous Substance Products?: https://en.fda.moph.go.th/entrepreneurs-hazardous-substances/category/how-to-apply-for-permission-on-hazardous-substance-products/
+How to Apply for Herbal Products Permission?: https://en.fda.moph.go.th/entrepreneurs-herbal-products/category/food-how-to-apply-for-herbal-products-permission/
 핵심 정보:
 - 의료기기: Class I(저위험)~III(고위험) | Class I=신고 | II~III=허가
 - SaMD(소프트웨어 의료기기): 2024년 규제 가이드라인 발표
@@ -491,7 +498,311 @@ MOH 전자신청: https://dichvucong.moh.gov.vn
 의료기기(MDCO): https://www.mdco.gov.hk
 화장품: https://www.customs.gov.hk/en/trade_facilitation/manifest/cosmetics/index.html
 식품안전: https://www.cfs.gov.hk/english
+Useful Guidelines: https://www.drugoffice.gov.hk/eps/do/en/healthcare_providers/news_informations/useful_guidelines.html
+
+Useful Guidelines
+ 
+Drug Registration (With PRS 2.0 information)
+
+Registration of Pharmaceutical Products
+
+Change of Registered Particulars of a Registered Pharmaceutical Product
+
+Renewal of Pharmaceutical Product Registration
+
+Primary Evaluation
+
+"1+" mechanism
+
+Guidance Notes on Classification of Products as "Pharmaceutical Products" under the Pharmacy and Poisons Ordinance (Cap. 138)
+
+Poison or Antibiotic? A Guide to "Class" Entries
+
+Supplementary Information for Drug Registration
+
+Statement of Purpose
+
+Pharmaceuticals Registration System (PRS 2.0)
+
+Clinical Trial/Medicinal Test (With e-CTS information)
+
+Application for Certificate for Clinical Trial/Medicinal Test
+
+Certificate for Clinical Trial / Medicinal Test: Guidance Notes for Applicants
+Notice of requirement on reporting of local drug related safety report, progress report and final study report in clinical trial
+Cover sheet for application for change of Certificate for Clinical Trial/Medicinal Test and subsequent submission
+General Workflow for Processing Application for Clinical Trial Certificate
+Frequently Asked Questions on Application for the Certificate for Clinical Trial/Medicinal Test
+
+Electronic Clinical Trial System (e-CTS)
+
+Account Registration Form (e-CTS)
+Guidance Notes on New Account Registration for e-CTS
+Login to e-CTS System
+e-CTS User Guide
+e-CTS Video Demonstration
+Frequently Asked Questions on e-CTS
+
+Application for Import & Export Licences for Pharmaceutical Products & Medicines (including products for clinical trial)
+
+Guidance for Application for Import and Export Licences for Pharmaceutical Products and Medicines (including products for clinical trial)
+
+Statement of Purpose
+
+Import and Export (With PLAMMS information)
+
+Application for import and export licences (for pharmaceutical and Medicine)
+
+Guidance for Application for Import and Export Licences for Pharmaceutical Products and Medicines
+Guidance Notes on Application for an Export Compulsory Licence of Pharmaceutical Products Under the Patents Ordinance
+Statement of Purpose
+Application for import and export licences (for Dangerous Drug)
+
+Import and Export of Dangerous Drugs - Guidance Notes for Applicants
+Application for import and export licences via Pharmaceuticals Licence Application and Movement Monitoring System (PLAMMS)
+
+Account Registration Form (PLAMMS)
+Guidance Notes on Application for New On-line User Account Registration for PLAMMS
+Login to PLAMMS System
+Guidance Notes for the Application of Import and Export Licences for unregistered pharmaceutical products for re-export purpose
+PLAMMS User Guide
+Example of Import Licence Form 3 (PLAMMS)
+Example of Export Licence Form 6 (PLAMMS)
+Frequently Asked Question
+
+Wholesale Trader
+
+Application for wholesale dealing of medicines
+Pharmaceutical Products Recall Guidelines
+Guidance Notes on Manufacture, Wholesale, Storage and Transport of Medical Gases
+Guidelines for drug disposal
+Code of Practice for Holder of Wholesale Dealer Licence (with effect from 1 August 2021)
+
+Retail Trader
+
+Application for Retail dealing of medicines
+Labelling of Dispensed Medicines
+Code of Practice for Authorized Seller of Poisons (2015) (with effect from 1 June 2015)
+Guidelines for drug disposal
+"Guidelines on Current Good Radiopharmacy Practice (cGRPP) in the Preparation of Radiopharmaceuticals" issued by the European Association of Nuclear Medicine
+Code of Practice for Listed Seller of Poisons (2015) (with effect from 1 June 2015)
+
+Manufacturer
+
+Licence for Manufacturer
+Application for Licence for Manufacturer
+Application for Licence for Manufacturer (e-form)
+Application for Change of Key Personnel and Manufacturing Premises
+Application for Free Sale Certificate of Pharmaceutical Product and Certificate of Pharmaceutical Product
+Application for Free Sale Certificate of Pharmaceutical Product and Certificate of Pharmaceutical Product (e-form)
+GMP Guide for Pharmaceutical Products (With effect from 1 July 2025) (English Only)
+Inspection of Manufacturers of Pharmaceutical Products
+Licence for Manufacturer (Secondary Packaging)
+Application for Licence for Manufacturer (Secondary Packaging)
+Application for Licence for Manufacturer (Secondary Packaging) (e-form)
+Hong Kong Guide to GMP for the Secondary Packaging of Pharmaceutical Products (July 2024 version) (With effect from 1 July 2025)
+Guidance for Industry on Secondary Packaging (English Only)
+Registration as Authorized Person
+Application for Registration as Authorized Person
+Application for Registration as Authorized Person (e-form)
+Application for Renewal of Registration as Authorized Person
+Application for Renewal of Registration as Authorized Person (e-form)
+Guidelines on Application of Registration as Authorized Person
+Qualification, Experience and Training Requirements for Authorized Persons and Other Key Personnel
+Guidance on Qualification, Experience and Training Requirements for Authorized Persons and Other Key Personnel of Licensed Manufacturers in Hong Kong
+List of approved Continuing Professional Development Activities (English Only)
+Continuing Professional Development (CPD) Record Form (English Only)
+Code of Practice for Licensed Manufacturers and Registered Authorized Persons
+Manufacture of Unregistered Product for Particular Patients
+Guidance for Industry-Manufacture of Unregistered Product for Particular Patients
+Request Form for Permission of Manufacture of Unregistered Pharmaceutical Product by Licensed Manufacturer for Treatment of Particular Patients
+Guidance Notes on Manufacture, Wholesale, Storage and Transport of Medical Gases
+Guidance on Disposal of Unserviceable/Expired Medicines
+Certificate for Manufacturer (Good manufacturing practice in respect of proprietary Chinese medicines)
+Application Form for Certificate for Manufacturer (Good manufacturing practice in respect of proprietary Chinese medicines)
+
+Undesirable Medical Advertisements Ordinance (Cap. 231)
+
+Guidelines on Undesirable Medical Advertisements Ordinance(Cap. 231)
+Annex A- Examples of Prohibited and Allowable Claims under Schedule 1 & 2 (in Chinese only)
+Annex B- Supplementary Guidelines on Regulation of Six Groups of Health Claims of Orally Consumed Products
+Frequently Asked Questions
+
 핵심 정보: 의료기기 자발적 등록 (MDCO) | 영어 또는 중국어 번체 제출
+Frequently Asked Questions: https://www.drugoffice.gov.hk/eps/do/en/healthcare_providers/news_informations/faq.html
+General Information
+Q.1What is considered as a “pharmaceutical product” or “medicine” in Hong Kong?
+A.1Under the Pharmacy and Poisons Ordinance, “Pharmaceutical product” or “medicine” —
+
+(a) means a substance, or combination of substances that —
+(i) is presented as having properties for treating or preventing disease in human beings or animals; or
+(ii) may be used in or administered to human beings or animals with a view to –
+(A) restoring, correcting or modifying physiological functions by exerting a pharmacological,
+immunological or metabolic action; or
+(B) making a medical diagnosis; and
+(b) includes an advanced therapy product.
+For more details about the Pharmacy and Poisons Ordinance and Pharmacy and Poisons (Amendment) Ordinance 2020, please refer to the website below:
+https://www.elegislation.gov.hk/index/chapternumber?p0=1&TYPE=1&TYPE=2&TYPE=3&CAP_NO_FR=138&_lang=en
+
+https://egazette.gld.gov.hk/pdf?type=es1&year=2020&volume=24&gno=30¬ice_no=19&extra=0
+Q.2What is the difference in the control between Western medicine and Chinese medicine in Hong Kong?
+A.2In general, Western medicine refers to pharmaceutical product as defined above in A.1 and is controlled under the Pharmacy and Poisons Ordinance (Cap. 138). For Chinese medicine, it is controlled under Chinese Medicine Ordinance (Cap. 549). The sale, manufacturing, dispensing or compounding of Chinese herbal medicines or proprietary Chinese medicines as defined in section 2 of the Chinese Medicine Ordinance (Cap. 549) or other materials of herbal, animal or mineral origin customarily used by the Chinese for medicinal purpose is exempted from regulation under the Pharmacy and Poisons Ordinance (Cap. 138).
+You may find more information on the regulation of Chinese medicines on the Chinese Medicine Council’s website (www.cmchk.org.hk) or the website of the Chinese Medicine Regulatory Office of Department of Health (www.cmro.gov.hk). You may also call the Chinese Medicine Regulatory Office of Department of Health (Tel.: 2319 5119) for enquiries relating to Chinese medicines.
+
+Q.3How can I know more about the legal requirements of handling pharmaceutical products in Hong Kong?
+A.3The regulation of pharmaceutical products are mainly provided under the following Laws of Hong Kong:
+
+Pharmacy and Poisons Ordinance (Cap. 138)
+Antibiotics Ordinance (Cap. 137)
+Dangerous Drugs Ordinance (Cap. 134)
+Undesirable Medical Advertisements Ordinance (Cap. 231)
+Public Health and Municipal Services Ordinance (Cap. 132)
+Import and Export Ordinance (Cap. 60)
+The printed versions of these Laws of Hong Kong can be purchased from the Publications Sales Unit of Information Services Department (Tel.: 2537 1910), from the Government Bookstore (www.bookstore.gov.hk) or by email at puborder@isd.gov.hk. For the contents of the relevant legislation, please refer to the website of Bilingual Laws Information System of Department of Justice below:
+https://www.elegislation.gov.hk/index/chapternumber?p0=1&TYPE=1&TYPE=2&TYPE=3&_lang=en
+
+Q.4Are all pharmaceutical products sold in Hong Kong registered?
+A.4As stipulated under Reg.36(1) of the Pharmacy and Poisons Regulations (Cap. 138A), "pharmaceutical products" must be registered before they can be sold, offered for sale, distributed or possessed for the purposes of sales, distribution or other use in Hong Kong.
+
+Sale of unregistered pharmaceutical products is an offence under the Pharmacy and Poisons Ordinance. The maximum penalty is a fine at level 6 of Criminal Procedure Ordinance Cap 221 ($100,000) and two years' imprisonment.
+
+Q.5Once registered, can all pharmaceutical products be freely sold in Hong Kong?
+A.5Registered pharmaceutical products are subject to various kinds of control over their sale to protect the health of the public. In Hong Kong, the Poisons List under the Tenth Schedule of Pharmacy and Poisons Regulations (Cap. 138A) lists out those ingredients classified as poisons. Some poisons are further categorized under different Parts of the Poisons List and other different Schedules under the Pharmacy and Poisons Regulations (Cap. 138A) according to their potency, toxicity and potential side-effects.
+
+Such categorization determines the different levels of control over their sale. For example, pharmaceutical products that do not contain any poisons or contain Part 2 Poisons are referred as Over-The-Counter medicines (OTC). The former can be sold in any retail shops while the latter can be sold in Authorized Sellers of Poisons (ASP, usually known as pharmacies or dispensaries) and Listed Sellers of Poisons (LSP, usually known as medicine stores). Pharmaceutical products containing Part 1 poisons can only be sold in pharmacies (ASP) in the presence and under the supervision of registered pharmacists.
+
+Some Part 1 poisons are further classified into the First Schedule and the Third Schedule with additional restrictions on their sale at the retailers. The sale of pharmaceutical products containing Part 1 First Schedule poisons further requires keeping sale records which include the date of sale, the name, number of identity card, address and signature of the purchaser, the name and quantity of the medicine as well as the purpose for which it is required. The sale of pharmaceutical products containing prescription only medicines (Part 1 Third Schedule poisons) must be authorized by a prescription from a registered medical practitioner, a registered dentist or a registered veterinary surgeon.
+
+Antibiotics defined under the Antibiotics Ordinance (Cap. 137) and dangerous drugs defined under the Dangerous Drugs Ordinance (Cap. 134) are also prescription only medicines.
+
+Q.6Why do the outer boxes of some pharmaceutical products bear the word“Prescription Drug 處方藥物” or “Drug under Supervised Sales 監督售賣藥物”?
+A.6According to the Pharmacy and Poisons Ordinance, all Part 1 poisons and Part 2 poisons must be labelled with the word "Poison 毒藥" or other applicable words specified in the above Ordinance. The word "Poison 毒藥" was used to serve as a warning to consumers as improper use of these medicines may cause serious health damage in the past. These medicines should only be used upon advice from healthcare professionals.
+
+With effect from 5 August 2016, pharmaceutical products or medicines containing Part 1 poisons (except those included in the Third Schedule) should be labelled with the words "Drug under Supervised Sales 監督售賣藥物"; pharmaceutical products or medicines containing poisons included in the Third Schedule should be labelled with the words "Prescription Drug 處方藥物".
+
+
+Order and supply of medicine
+Q.7I am going to set up a medical clinic. Where can I get medicines for my patients?
+A.7 If you are a registered medical practitioner, you can obtain medicine for the purpose of medical treatment to your patients from holders of Wholesale Dealer licence, licensed manufacturer and Authorized Sellers of Poisons (usually known as pharmacies or dispensaries).
+
+Information on holders of wholesale dealer licence, licensed manufacturer and pharmacies can be found from the “Search Drug Dealers” of Drug Office’s website at the following link:
+http://www.drugoffice.gov.hk/eps/do/en/healthcare_providers/search_drug_dealers.html
+
+Q.8Do I need to have any licence to possess and dispense these medicines in my medical clinic?
+A.8 As long as the medicines are to be supplied by a registered medical practitioner for the purpose of medical treatment, no additional licence is required even the medicines are poisons. However, please note that for medicine dispensed to patients, you should label it in accordance with the Code of Professional Conduct issued by the Medical Council of Hong Kong with the following particulars:
+
+name of prescribing doctor or proper means of identifying him;
+full name of the patient;
+date of dispensing;
+name of medicine (brand or generic name);
+method of administration;
+dosage of administration; and
+precaution where applicable
+According to Section 28 of the Pharmacy and Poisons Ordinance (Cap. 138), a medicine which is supplied by a registered medical practitioner for the purpose of medical treatment, on the day on which the medicine is supplied, or, if that is not reasonably practicable, on the day next following that day, there shall be entered in the record of treatment or other document relating to the supply thereof the following particulars:
+
+the date on which the medicine was supplied; and
+the name and address of any person to whom or on whose behalf it was supplied; and
+the ingredients of the medicine and the quantity, dosage and duration of supply.
+For dangerous drugs, doctor is required to keep a register of every item of dangerous drugs obtained or supplied by him, in the form and manner specified in Reg. 5 and 6 of the Dangerous Drugs Regulation (Cap. 134A). The register should be maintained in the prescribed format (see Appendix I). For the contents of the relevant legislation, please refer to the website of Bilingual Laws Information System of Department of Justice below:
+
+https://www.elegislation.gov.hk/index/chapternumber?p0=1&TYPE=1&TYPE=2&TYPE=3&CAP_NO_FR=138&_lang=en
+
+Q.9If I order medicines which are Part 1 Poisons, can I sell some of it to other doctors?
+A.9 A registered doctor is authorized under the Pharmacy and Poisons Ordinance to supply Part 1 Poisons for the purpose of medical treatment. Furthermore, Reg. 25 of the Pharmacy and Poisons Regulations (Cap. 138A) stipulates that only Authorized Sellers of Poisons (usually known as pharmacies or dispensaries), licensed manufacturers (in selling own manufactured product), or holders of Wholesale Dealer Licence are authorized to sell poisons. If you do not hold such licences, you are not allowed to sell poisons to a third party.
+
+Q.10If I work for a medical group with many clinics, can the medicine be distributed to all the clinics within the group?
+A.10 According to Reg. 25 of the Pharmacy and Poisons Regulations (Cap. 138A), only Authorized Sellers of Poisons (usually known as pharmacies or dispensaries), licensed manufacturers (in selling own manufactured product), or holders of Wholesale Poisons Licence are authorized to sell poisons. Doctors are not exempted from this requirement. The medicine ordered under a doctor’s name can only be used on the treatment of his own patients.
+
+Reporting Adverse Drug Reaction (ADR)
+
+Q.11What is an adverse drug reaction?
+A.11An adverse drug reaction is a response, which is noxious and unintended, to a pharmaceutical product.
+
+Q.12Who should report a suspected ADR?
+A.12 Healthcare professionals including doctors, Chinese medicine practitioners, dentists and pharmacists are encouraged to report suspected ADR of their patients voluntarily.
+
+Q.13How can I report an ADR?
+A.13 You can report through the following channels:
+
+a. Report online by completing the online report form at http://www.drugoffice.gov.hk/adr.html; or
+b. Download the report form (available at http://www.drugoffice.gov.hk/adr.html) and return the completed report by
+(a) Email to adr@dh.gov.hk;
+(b) fax to 2319 6319; or
+(c) mail or delivery to the Undesirable Medical Advertisements and Adverse
+     Drug Reaction Unit, Drug Office, Department of Health at
+     Suites 2002-05, 20/F, AIA Kowloon Tower, Landmark East,
+     100 How Ming Street, Kwun Tong, Kowloon.
+
+
+Q.14What should be included in an ADR report?
+A.14 You should provide particulars of the reporter and the patient, information about the reaction including the description of the reaction, the drug involved, treatment of the reaction, its outcome and comments.
+
+For further information, you can refer to the Reporting Guidance which is uploaded on the website of the Drug Office at the following link:
+
+http://www.drugoffice.gov.hk/eps/do/en/healthcare_providers/adr_reporting/index.html
+
+Q.15What kind of ADRs should I report to your office?
+A.15 Healthcare professionals are encouraged to report the following adverse drug reaction cases:
+
+- All suspected serious adverse drug reaction, even if the reaction is well known;
+- Suspected drug interactions including drug-drug and drug-herb interactions;
+- Non-serious adverse drug reactions but the reactions are deemed medically significant
+  by the healthcare professional (e.g. increased frequency or unusual presentation of a known
+  adverse drug reaction);
+- Unexpected adverse drug reactions, i.e. the reactions are not found in the product information or
+  labeling (e.g. an unknown side effect in a new drug).
+
+
+Clinical trial
+
+Q.16What should I do if I want to conduct a clinical trial?
+A.16You need to apply for a Certificate of Clinical Trial in order to conduct any clinical trial on human beings. Application should be submitted via the Electronic Clinical Trial System (e-CTS) at https://www.drugoffice.gov.hk/CTCInterWeb/jsp, accompanied by supporting documents. For detailed instructions, please refer to the “Guidance Notes on the Application for Certificate for Clinical Trial/Medicinal Test” which is available at the webpage of our office below:
+http://www.drugoffice.gov.hk/eps/do/en/pharmaceutical_trade/guidelines_forms/useful_guidelines_forms.html
+
+Q.17What are the documentation requirements for application of the Certificate of Clinical Trial on First-in-Human (FIH) trials of pharmaceutical products?
+A.17 The documentation requirement to support FIH applications is not significantly different to that for later phase studies. The pharmaceutical product need not be registered in other countries before the FIH trial can be conducted in Hong Kong. The applicant may arrange to have pre-submission meeting with Drug Office for FIH trial of a pharmaceutical product. For enquiry regarding the pre-submission meeting, please contact Drug Office at Tel.: 3974 4180.
+
+Others
+Q.18How should I deal with expired medicines?
+A.18 Waste containing expired or unserviceable medicine (including dangerous drugs) are classified as chemical waste under the Waste Disposal Ordinance (Cap. 354). The disposal of chemical waste is regulated under the Waste Disposal (Chemical Waste) (General) Regulation (Cap. 354C) which is enforced by the Environmental Protection Department (EPD). More information may be found from the EPD website at https://www.epd.gov.hk/epd/english/environmentinhk/waste/guide_ref/guide_cwc.html or you may wish to contact the Environmental Protection Department for information on medicine disposal (Tel: (852) 2838 3111, email: enquiry@epd.gov.hk).
+
+Please be reminded that the dangerous drugs register must be updated after disposal of dangerous drugs with supporting documents. You can refer to A.8 for details on record keeping. The prescribed format of the register can be found at Appendix I.
+
+Q.19If I want to raise a complaint about a product marketed with a Hong Kong registration number, what should I do?
+A.19If the product you have on hand is labelled with the registration number indicated as HK-XXXXX, you can contact Our Office (Tel.:2572 2068) for any complaint on the pharmaceutical product. You can also send us an email at pharmgeneral@dh.gov.hk with details of your complaint.
+
+However, if the product’s registration number is indicated as HKP-XXXXX, HKNT-XXXXX or HKC-XXXXX, it is a proprietary Chinese medicine. You should contact the Chinese Medicine Regulatory Office of Department of Health (Tel.: 2319 5119).
+
+Q.20If I suspect that a shop is selling counterfeit medicine, what should I do?
+A.20You are encouraged to report suspected counterfeiting activities to the Customs and Excise Department by:
+
+Customs Hotline (24-hour)
+(852) 2545 6182
+Fax
+(852) 2543 4942; or
+Mail
+Commissioner of Customs and Excise
+G.P.O Box No. 1166
+Q.21Tell me more about the recent changes in the sales control of codeine-containing medicines.
+A.21Starting from 26 January 2024, it is a legal requirement for pharmacy to record the purchaser's personal information, including Identity Card number, when supplying codeine-containing medicines without doctor's prescription.
+
+The Government had always been concerned about the abuse of codeine containing medicines, the Pharmacy and Poisons Board of Hong Kong reviewed the regulatory control of codeine-containing medicines and decided to strengthen the sales control of non-prescription codeine-containing medicines. With effect from 26 January 2024, all medicines containing less than 0.2% of codeine are regulated as Part 1 Schedule 1 poisons under the Pharmacy and Poisons Regulations (Cap. 138A).
+
+In other words, when supplying a codeine-containing medicines, an Authorized Seller of Poisons ('pharmacy' or 'dispensary') must make an entry in the book (known as "poisons book") with particulars of the purchaser, including his/her name, address and Identity Card number. The purchaser is also required to sign in the poisons book accordingly. This requirement only applies to non-prescription codeine-containing medicines, i.e. medicines containing less than 0.2% codeine.
+
+Q.22Does the Drug Office provide medicine testing service to public?
+A.22The Drug Office is a law enforcement agency over the legislations concerning medicines.
+
+In general, the Drug Office does not provide testing service to public. If you wish to test a medicine, you may approach the private laboratories.
+
+The Hong Kong Accreditation Service (HKAS) of the Innovation and Technology Commission provides accreditation to laboratories located in Hong Kong through the Hong Kong Laboratory Accreditation Scheme (HOKLAS). You may wish to refer to the website of HKAS with list of accredited laboratories:
+https://www.itc.gov.hk/en/quality/hkas/index.html
+
+Appendix I
+(Appendix of A.8)
+
+Format of Dangerous Drug Register: Date of receipt/supply, Name and address* of person or firm from whom received /to whom supplied (*cross reference of the person to whom supplied may be made in which case only the reference number of the person's treatment record needs to be given), Patient's identity card number+ (+for a patient who is not resident in Hong Kong, the reference number of any proof of identity, other than an identity card, specified in sectin 17B(1) of the Immigration  Ordinance (Cap 115) shall be inserted), Amount received/supplied, Invoice number and Balance.
+30 Jun 2022
 
 [인도 CDSCO 공식 서류]
 CDSCO 공식 사이트: https://cdsco.gov.in/opencms/opencms/en/Home/

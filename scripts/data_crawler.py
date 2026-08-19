@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-GlobalRegAI — 전 세계 규정 데이터 크롤러 & 수집 파이프라인
+GlobalRegAI — 전 세계 규정 데이터 크롤러 & 수집 파이프라인 (v1.2.0)
 소스: FDA · EMA · MFDS · NMPA · PMDA · AEMPS · WHO · ICH · PIC/S
-      eCFR · EUR-Lex · Reddit · RAPS · Elsmar · PubMed · EFSA · Codex
+      eCFR · EUR-Lex · Reddit · RAPS · Elsmar · PubMed · EFSA · Codex · HK DH (Hong Kong)
 
 설치: pip install requests beautifulsoup4 pdfplumber tqdm feedparser
 """
@@ -45,6 +45,9 @@ HEADERS     = {
     "User-Agent": "GlobalRegAI/1.0 (Regulatory Knowledge Base; Educational Use)",
     "Accept": "application/json, text/html",
 }
+
+# 환경 변수 확장: 대한민국 공공데이터포털 API Key (무료 발급)
+MFDS_API_KEY = os.getenv("MFDS_API_KEY", "YOUR_PUBLIC_DATA_KEY_HERE")
 
 PDF_DIR.mkdir(parents=True, exist_ok=True)
 Path("logs").mkdir(exist_ok=True)
@@ -551,7 +554,7 @@ class PubMedCrawler:
 
 
 class MFDSCrawler:
-    """한국 MFDS (식품의약품안전처) 크롤러"""
+    """한국 MFDS (식품의약품안전처) 크롤러 및 실시간 공공 API 수집 엔진"""
 
     PAGES = [
         ("MFDS Medical Device English", "https://www.mfds.go.kr/eng/brd/m_60/list.do", "ko"),
@@ -561,10 +564,58 @@ class MFDSCrawler:
         ("MFDS 식품안전정보", "https://www.foodsafetykorea.go.kr", "ko"),
     ]
 
+    def crawl_api_ingredients(self) -> int:
+        """
+        k-mfds-fooddb-mcp-server 통합 모델: 
+        대한민국 공공데이터포털의 식약처 공인 건강기능식품 인정 원료 성분 동기화
+        """
+        if not MFDS_API_KEY or "YOUR_PUBLIC" in MFDS_API_KEY:
+            log.warning("  [MFDS API] 서비스 키가 기본값이거나 누락되어 API 동기화를 건너뜁니다.")
+            return 0
+            
+        count = 0
+        log.info("  [MFDS API] 식약처 건강기능식품 원료 고시 데이터 동기화 중...")
+        
+        # 다국적 실버 푸드 진출 핵심 연동 카테고리 키워드
+        sync_targets = ["홍삼", "인삼", "유산균", "프로바이오틱스", "비타민", "오메가"]
+        url = "http://apis.data.go.kr/1471000/MdcinGrntInfoService05/getMdcinGrntInq05"
+        
+        for keyword in sync_targets:
+            params = {
+                'serviceKey': MFDS_API_KEY,
+                'prduct': keyword,
+                'type': 'json',
+                'numOfRows': 30,
+                'pageNo': 1
+            }
+            try:
+                r = requests.get(url, params=params, timeout=15)
+                if r.status_code == 200:
+                    items = r.json().get('body', {}).get('items', [])
+                    for item in items:
+                        text = (
+                            f"대한민국 식약처 고시 원료 정보\n"
+                            f"원료/제품명: {item.get('PRDLST_NM', '')}\n"
+                            f"원재료 구성성분: {item.get('RAWMTRL_NM', '')}\n"
+                            f"인정된 기능성 내용: {item.get('FNCLTY_CN', '')}\n"
+                            f"제조 규격 및 흡수 제한: {item.get('STNDRD_CN', '')}"
+                        )
+                        count += ingest_text(text, {
+                            "agency": "MFDS", "category": "Korean Certified Ingredients",
+                            "title": f"식약처 고시: {item.get('PRDLST_NM', keyword)[:80]}",
+                            "source": "https://data.go.kr/data/1471000",
+                            "type": "regulation_api", "language": "ko"
+                        })
+                time.sleep(0.5)
+            except Exception as e:
+                log.warning(f"MFDS API 연결 에러 ({keyword}): {e}")
+        return count
+
     def crawl_all(self) -> int:
         count = 0
+        # 1. 기존 가이드라인 HTML 웹 스크래핑
         for title, url, lang in self.PAGES:
-            log.info(f"  [MFDS] {title}...")
+            log.info(f"  [MFDS 웹] {title}...")
             text = fetch_html(url)
             if text and len(text) > 200:
                 count += ingest_text(text[:30000], {
@@ -573,6 +624,9 @@ class MFDSCrawler:
                     "type": "regulation", "language": lang
                 })
             time.sleep(2)
+            
+        # 2. 신규 확장: 식약처 원료성분 DB 실시간 API 연동 추가
+        count += self.crawl_api_ingredients()
         return count
 
 
@@ -726,6 +780,56 @@ class PMDACrawler:
         return count
 
 
+class HKDHOfficeCrawler:
+    """홍콩 의약품사무소(DH Drug Office) 공식 규제 가이드라인 크롤러 (신규 확장)"""
+
+    BASE_URL = "https://www.drugoffice.gov.hk/eps/do/en/pharmaceutical_trade/guidelines_forms/useful_guidelines_forms.html"
+
+    def crawl_all(self) -> int:
+        count = 0
+        log.info("  [HK DH] Crawling Hong Kong Drug Office Guidelines...")
+        try:
+            r = requests.get(self.BASE_URL, headers=HEADERS, timeout=20)
+            if r.status_code != 200:
+                return 0
+                
+            soup = BeautifulSoup(r.text, "html.parser")
+            
+            # 홍콩 보건 허가 관련 주요 신약 매커니즘("1+") 및 건강 기능성 표기 조항 앵커 추출
+            links = soup.find_all("a", href=re.compile(r"\.pdf"))
+            
+            # 중복 제거 및 도메인 결합
+            pdf_targets = []
+            for link in links:
+                href = link.get("href", "")
+                title = link.get_text(strip=True)
+                if not href or len(title) < 5:
+                    continue
+                if href.startswith("/"):
+                    href = "https://www.drugoffice.gov.hk" + href
+                elif not href.startswith("http"):
+                    href = "https://www.drugoffice.gov.hk/eps/do/en/pharmaceutical_trade/guidelines_forms/" + href
+                pdf_targets.append((title, href))
+
+            # 최대 5개의 상위 핵심 가이드라인 우선 분석 기동 (서버 트래픽 조절 목적)
+            for title, url in pdf_targets[:5]:
+                log.info(f"  [HK DH] 수집 가이드라인 다운로드: {title[:40]}...")
+                safe_name = f"HK_DH_{hashlib.md5(url.encode()).hexdigest()[:6]}.pdf"
+                path = download_pdf(url, safe_name)
+                if path:
+                    text = extract_pdf_text(path)
+                    if text and len(text) > 100:
+                        count += ingest_text(text, {
+                            "agency": "HK_DH", "category": "Hong Kong Pharmaceutical Guideline",
+                            "title": f"HK DH: {title[:80]}", "source": url,
+                            "type": "guideline", "language": "en"
+                        })
+                time.sleep(1.5)
+        except Exception as e:
+            log.warning(f"Hong Kong Drug Office 수집 중 에러 발생: {e}")
+        return count
+
+
 # ════════════════════════════════════════════════════════════
 # MAIN PIPELINE
 # ════════════════════════════════════════════════════════════
@@ -762,10 +866,11 @@ def run_full_pipeline(sources: list = None):
     print(f" Started: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     print("="*60)
 
+    # 신규 확장 소스 'hk_dh' 목록 기본값에 편입
     all_sources = sources or [
         "fda_recalls", "fda_510k", "fda_drug", "fda_food",
         "ecfr", "ich", "who", "ema",
-        "mfds", "pmda", "spanish",
+        "mfds", "pmda", "spanish", "hk_dh",
         "chemical", "reddit", "rss", "pubmed",
         "community"
     ]
@@ -796,6 +901,7 @@ def run_full_pipeline(sources: list = None):
         "mfds":         (MFDSCrawler(), "crawl_all"),
         "pmda":         (PMDACrawler(), "crawl_all"),
         "spanish":      (SpanishRegCrawler(), "crawl_all"),
+        "hk_dh":        (HKDHOfficeCrawler(), "crawl_all"),  # 홍콩 의약품 안전처 바인딩
         "chemical":     (ChemicalRegCrawler(), "crawl_all"),
         "reddit":       (RedditCrawler(), "crawl_all"),
         "rss":          (RSSCrawler(), "crawl_all"),
@@ -841,7 +947,7 @@ if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser(description="GlobalRegAI Data Crawler")
     parser.add_argument("--sources", nargs="+",
-                        help="Specific sources to crawl (e.g. fda_recalls ecfr ich)")
+                        help="Specific sources to crawl (e.g. fda_recalls ecfr ich mfds hk_dh)")
     parser.add_argument("--all", action="store_true", default=True,
                         help="Crawl all sources")
     args = parser.parse_args()

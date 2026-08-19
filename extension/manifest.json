@@ -1,0 +1,30 @@
+{
+  "manifest_version": 3,
+  "name": "GlobalRegAI GMP Browser Agent",
+  "version": "1.0.0",
+  "description": "Automated DOM agent for GMP regulatory portal gap auto-fill and submission verification.",
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "storage"
+  ],
+  "host_permissions": [
+    "http://localhost/*",
+    "http://127.0.0.1/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "http://localhost/*",
+        "http://127.0.0.1/*",
+        "file://*/*"
+      ],
+      "js": ["content_script.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "GlobalRegAI GMP Agent"
+  }
+}

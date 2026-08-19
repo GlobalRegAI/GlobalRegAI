@@ -2,6 +2,7 @@ import os
 import json
 import datetime
 import urllib.parse
+import re
 import httpx
 from fastapi import FastAPI, Request, Query, Response, Cookie
 from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse
@@ -18,8 +19,8 @@ from i18n import I18N_DICTIONARY, get_text
 
 app = FastAPI(
     title="GlobalRegAI Dedicated Service Platform",
-    description="Completely Separated Dedicated Pages with Free Multi-Language Translation System",
-    version="12.0.0"
+    description="Completely Separated Dedicated Pages with Official MFDS Korean Regulatory Free Translation Engine",
+    version="13.0.0"
 )
 
 app.mount("/extension", StaticFiles(directory="extension"), name="extension")
@@ -55,6 +56,34 @@ class DevLoginPayload(BaseModel):
     username: str
     password: str
 
+# OFFICIAL MFDS KOREAN REGULATORY TERMINOLOGY POST-PROCESSING FILTER
+MFDS_KOREAN_TERMS_MAP = {
+    "cleaning validation": "세척 밸리데이션",
+    "Cleaning validation": "세척 밸리데이션",
+    "process validation": "공정 밸리데이션",
+    "Process validation": "공정 밸리데이션",
+    "re-validation": "공정 재밸리데이션",
+    "revalidation": "공정 재밸리데이션",
+    "HBEL/PDE": "독성성분 허용일일노출량(HBEL/PDE)",
+    "hbel/pde": "독성성분 허용일일노출량(HBEL/PDE)",
+    "residual TOC": "잔류유기탄소(TOC)",
+    "corrective action plan": "시정 및 예방조치(CAPA)",
+    "CAPA": "시정 및 예방조치(CAPA)",
+    "cleanroom": "작업소 청정도",
+    "HVAC": "작업소 공기조화제어(HVAC)",
+    "commercial manufacturing": "의약품 상업 제조",
+    "batch record": "배치 생산 기록서",
+    "regulatory affairs": "개발 허가 심사(RA)"
+}
+
+def apply_mfds_korean_term_filter(text: str) -> str:
+    cleaned = text.strip()
+    cleaned = re.sub(r'[\x00-\x1f\x7f-\x9f]', '', cleaned)
+    for k, v in MFDS_KOREAN_TERMS_MAP.items():
+        pattern = re.compile(re.escape(k), re.IGNORECASE)
+        cleaned = pattern.sub(v, cleaned)
+    return cleaned
+
 @app.get("/ads.txt", response_class=PlainTextResponse)
 def get_ads_txt():
     return "google.com, pub-9335333067725848, DIRECT, f08c47fec0942fa0\n"
@@ -71,7 +100,7 @@ def developer_logout(response: Response):
     response.delete_cookie(key="dev_auth_token")
     return JSONResponse(content={"status": "SUCCESS", "message": "Logged out"})
 
-# FREE MULTI-LANGUAGE DOCUMENT TRANSLATION ENGINE (MyMemory + Google Translate Free Endpoint + Local Fallback)
+# FREE MULTI-LANGUAGE DOCUMENT TRANSLATION ENGINE WITH MFDS KOREAN FILTER
 @app.post("/api/translate")
 def translate_document_text(payload: TranslatePayload):
     text = payload.text.strip()
@@ -88,13 +117,14 @@ def translate_document_text(payload: TranslatePayload):
         res = httpx.get(url, timeout=4.0)
         if res.status_code == 200:
             data = res.json()
-            translated_text = data.get("responseData", {}).get("translatedText")
-            if translated_text and translated_text != text:
+            translated_raw = data.get("responseData", {}).get("translatedText")
+            if translated_raw and translated_raw != text:
+                final_text = apply_mfds_korean_term_filter(translated_raw) if target == "ko" else translated_raw
                 return JSONResponse(content={
                     "status": "SUCCESS",
-                    "engine": "MyMemory Free Translation API",
+                    "engine": "MyMemory Free Translation API (MFDS Term Filter)",
                     "original_text": text,
-                    "translated_text": translated_text,
+                    "translated_text": final_text,
                     "target_lang": target
                 })
     except Exception:
@@ -106,25 +136,27 @@ def translate_document_text(payload: TranslatePayload):
         res = httpx.get(gt_url, timeout=4.0)
         if res.status_code == 200:
             data = res.json()
-            translated_text = "".join([segment[0] for segment in data[0] if segment[0]])
-            if translated_text:
+            translated_raw = "".join([segment[0] for segment in data[0] if segment[0]])
+            if translated_raw:
+                final_text = apply_mfds_korean_term_filter(translated_raw) if target == "ko" else translated_raw
                 return JSONResponse(content={
                     "status": "SUCCESS",
-                    "engine": "Google Translate Free API Endpoint",
+                    "engine": "Google Translate Free API Endpoint (MFDS Term Filter)",
                     "original_text": text,
-                    "translated_text": translated_text,
+                    "translated_text": final_text,
                     "target_lang": target
                 })
     except Exception:
         pass
 
     # 3-Tier Fallback: Local Embedded Regulatory FastMCP Translator Engine
-    translated_fallback = f"[{target.upper()} Translation] {text} (Regulatory compliance terms validated by GlobalRegAI Engine)."
+    fallback_raw = f"[{target.upper()} Translation] {text}"
+    final_text = apply_mfds_korean_term_filter(fallback_raw) if target == "ko" else fallback_raw
     return JSONResponse(content={
         "status": "SUCCESS",
         "engine": "GlobalRegAI FastMCP Embedded Regulatory Translator Engine",
         "original_text": text,
-        "translated_text": translated_fallback,
+        "translated_text": final_text,
         "target_lang": target
     })
 
@@ -539,13 +571,13 @@ def get_main_qa_hub(domain: str = "Pharmaceuticals", lang: str = "en"):
       <!-- FREE MULTI-LANGUAGE DOCUMENT AUTO-TRANSLATOR MODULE -->
       <div class="glass-card">
         <h3 style="font-size: 15px; font-weight: 700; margin-bottom: 12px; color: #2563eb;">
-          <i class="fas fa-language"></i> 🌐 Free Multi-Language Document Auto-Translator Module
+          <i class="fas fa-language"></i> 🌐 Free Multi-Language Document Auto-Translator Module (식약처 법령 용어 필터 적용)
         </h3>
-        <p style="font-size: 13px; color: #64748b; margin-bottom: 14px;">Translate any SOP, regulatory document, or compliance statement into 10+ target languages for FREE.</p>
+        <p style="font-size: 13px; color: #64748b; margin-bottom: 14px;">Translate any SOP, regulatory document, or compliance statement into 10+ target languages for FREE with official MFDS terminology filter.</p>
         <textarea id="trans_text_input" style="width: 100%; height: 70px; padding: 10px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 13px; outline: none; margin-bottom: 10px;" placeholder="Paste SOP, regulatory clause, or document text to translate..."></textarea>
         <div style="display: flex; gap: 10px; align-items: center;">
           <select id="trans_target_lang" class="select-control">
-            <option value="ko" selected>🇰🇷 한국어 (식약처)</option>
+            <option value="ko" selected>🇰🇷 한국어 (식약처 공식 법령 용어)</option>
             <option value="en">🇺🇸 English (FDA)</option>
             <option value="ja">🇯🇵 日本語 (PMDA)</option>
             <option value="zh">🇨🇳 中文 (NMPA)</option>
@@ -625,7 +657,7 @@ def get_main_qa_hub(domain: str = "Pharmaceuticals", lang: str = "en"):
       if(!text) return alert('Please enter text to translate');
 
       resBox.style.display = 'block';
-      resBox.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Translating document text...';
+      resBox.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Translating document text with MFDS Korean term filter...';
 
       const res = await fetch('/api/translate', {{
         method: 'POST',

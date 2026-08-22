@@ -1,80 +1,60 @@
-#!/usr/bin/env python3
-"""
-GlobalRegAI — 자동 데이터 업데이트 스케줄러
-매일 새벽 2시: 전체 크롤링
-매시간: FDA RSS + 리콜 업데이트
-"""
-
-import schedule
+# Master Auto-Scheduler Daemon (Daily 12:00 KST / Weekly / Monthly)
+import sys
+import os
 import time
-import logging
-from datetime import datetime
-from pathlib import Path
+import schedule
+import datetime
+import subprocess
 
-Path("logs").mkdir(exist_ok=True)
-logging.basicConfig(
-    filename="logs/scheduler.log",
-    level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(message)s"
-)
-log = logging.getLogger("GlobalRegAI-Scheduler")
+sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+sys.stderr.reconfigure(encoding='utf-8', errors='replace')
 
-
-def job_hourly_fda():
-    """매시간: FDA 리콜/RSS 업데이트"""
-    log.info("=== Hourly FDA Update ===")
+def job_daily_kst_12_unresolved_query_analysis():
+    print(f"\n⏰ [JOB TRIGGERED: {datetime.datetime.now()}] Daily KST 12:00 Unresolved Query Self-Healing Analysis", flush=True)
     try:
-        from data_crawler import FDACrawler, RSSCrawler
-        fda = FDACrawler()
-        n1 = fda.crawl_device_recalls()
-        n2 = fda.crawl_drug_enforcement()
-        n3 = fda.crawl_food_enforcement()
-        rss = RSSCrawler()
-        n4 = rss.crawl_all()
-        log.info(f"Hourly update: recalls={n1+n2+n3}, rss={n4} chunks")
+        from scripts.unresolved_query_analyzer import analyze_and_heal_unresolved_queries
+        analyze_and_heal_unresolved_queries()
     except Exception as e:
-        log.error(f"Hourly update failed: {e}")
+        print(f"❌ Daily Job Error: {e}", flush=True)
 
-
-def job_daily_full():
-    """매일 새벽 2시: 전체 크롤링"""
-    log.info("=== Daily Full Crawl ===")
+def job_weekly_50_persona_simulation():
+    print(f"\n⏰ [JOB TRIGGERED: {datetime.datetime.now()}] Weekly 50-Persona Global RA/QA Audit Simulation", flush=True)
     try:
-        from data_crawler import run_full_pipeline
-        run_full_pipeline()
-        log.info("Daily full crawl completed")
+        from test_50_global_ra_qa_simulation import run_50_global_ra_qa_simulation
+        run_50_global_ra_qa_simulation()
     except Exception as e:
-        log.error(f"Daily crawl failed: {e}")
+        print(f"❌ Weekly Job Error: {e}", flush=True)
 
-
-def job_weekly_pdf():
-    """매주 일요일: PDF 재다운로드 & 수집"""
-    log.info("=== Weekly PDF Update ===")
+def job_monthly_structural_audit():
+    print(f"\n⏰ [JOB TRIGGERED: {datetime.datetime.now()}] Monthly Full Structural Health Audit", flush=True)
     try:
-        from pdf_bulk_downloader import download_all_pdfs, ingest_pdfs_to_qdrant
-        download_all_pdfs()
-        ingest_pdfs_to_qdrant()
-        log.info("Weekly PDF update completed")
+        from scripts.full_structure_auditor import run_monthly_structural_audit
+        run_monthly_structural_audit()
     except Exception as e:
-        log.error(f"Weekly PDF update failed: {e}")
+        print(f"❌ Monthly Job Error: {e}", flush=True)
 
+def main():
+    if "--test-run" in sys.argv:
+        print("=== EXECUTING TEST RUN OF ALL SCHEDULED JOBS ===", flush=True)
+        job_daily_kst_12_unresolved_query_analysis()
+        job_weekly_50_persona_simulation()
+        job_monthly_structural_audit()
+        print("=== TEST RUN COMPLETE ===", flush=True)
+        return
 
-if __name__ == "__main__":
-    print("\n GlobalRegAI Auto-Scheduler Started")
-    print(" Schedule:")
-    print("   Every hour     → FDA recalls + RSS feeds")
-    print("   Daily 02:00    → Full regulatory crawl (all sources)")
-    print("   Sunday 03:00   → PDF bulk download & ingest")
-    print(" Press Ctrl+C to stop\n")
+    print("=== GLOBALREGAI MASTER AUTO-SCHEDULER DAEMON STARTED ===", flush=True)
+    print("• Daily Job: KST 12:00 PM (Unresolved Query Self-Healing Analysis)")
+    print("• Weekly Job: Every Monday 09:00 AM (50-Persona Global RA/QA Audit Simulation)")
+    print("• Monthly Job: 1st of Every Month 00:00 (Full Structural Health Audit)\n", flush=True)
 
-    schedule.every(1).hours.do(job_hourly_fda)
-    schedule.every().day.at("02:00").do(job_daily_full)
-    schedule.every().sunday.at("03:00").do(job_weekly_pdf)
-
-    # 시작 시 즉시 한 번 실행
-    log.info("Scheduler started — running initial update")
-    job_hourly_fda()
+    # Schedule definitions
+    schedule.every().day.at("12:00").do(job_daily_kst_12_unresolved_query_analysis)
+    schedule.every().monday.at("09:00").do(job_weekly_50_persona_simulation)
+    schedule.every(30).days.do(job_monthly_structural_audit)
 
     while True:
         schedule.run_pending()
-        time.sleep(60)
+        time.sleep(30)
+
+if __name__ == "__main__":
+    main()

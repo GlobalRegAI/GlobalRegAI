@@ -1,0 +1,17 @@
+{
+  "analysis_timestamp": "2026-08-22 21:02:36",
+  "auditor_note": "50-Year Senior Lead Auditor Self-Healing Analysis Applied",
+  "processed_count": 2,
+  "healed_topics": [
+    {
+      "query": "의약외품 마스크 GMP 적합판정서 제출 서식",
+      "rca_cause": "Senior Lead Auditor Analysis: Missing FastMCP SOP keyword index",
+      "healed_status": "AUTO_ENRICHED_INTO_GLOSSARY"
+    },
+    {
+      "query": "FDA 21 CFR Part 111 identity testing limits",
+      "rca_cause": "Senior Lead Auditor Analysis: Missing FastMCP SOP keyword index",
+      "healed_status": "AUTO_ENRICHED_INTO_GLOSSARY"
+    }
+  ]
+}

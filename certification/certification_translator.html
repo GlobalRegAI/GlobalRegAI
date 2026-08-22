@@ -449,42 +449,63 @@
   function executeFileDownload(format) {
     closeDownloadModal();
     const text = document.getElementById('targetText').value;
-    const filename = `${currentFileName}_MFDS_Translated.${format}`;
+    const baseName = currentFileName ? currentFileName.replace(/\.[^/.]+$/, "") : "Translated_Document";
+    const filename = `${baseName}_MFDS_Translated.${format}`;
 
     if (format === 'json') {
       const jsonContent = JSON.stringify({
         title: "MFDS Translated Regulatory Document",
+        filename: filename,
         source_lang: document.getElementById('sourceLang').value,
         target_lang: document.getElementById('targetLang').value,
         date: new Date().toISOString(),
-        translated_text: text
+        translated_content: text
       }, null, 2);
-      triggerFileDownload(jsonContent, filename, 'application/json');
+      triggerFileDownload(jsonContent, filename, 'application/json;charset=utf-8');
     } else if (format === 'pdf') {
-      const printWindow = window.open('', '_blank');
-      printWindow.document.write(`
-        <html>
-        <head>
-          <title>${filename}</title>
-          <style>
-            body { font-family: sans-serif; padding: 40px; color: #111; line-height: 1.6; }
-            h2 { color: #0284c7; border-bottom: 2px solid #0284c7; padding-bottom: 8px; }
-            pre { white-space: pre-wrap; font-family: monospace; background: #f8fafc; padding: 20px; border-radius: 8px; border: 1px solid #cbd5e1; }
-          </style>
-        </head>
-        <body>
-          <h2>식품의약품안전처 (MFDS) 법령 공인 번역 서류</h2>
-          <p><strong>Document ID:</strong> ${filename} | <strong>Target Language:</strong> ${document.getElementById('targetLang').value.toUpperCase()} | <strong>Generated:</strong> ${new Date().toLocaleString()}</p>
-          <pre>${text}</pre>
-          <script>window.onload = function() { window.print(); };<\/script>
-        </body>
-        </html>
-      `);
-      printWindow.document.close();
+      // 1. Direct downloadable formatted PDF text blob
+      const header = `=======================================================================\n` +
+                     `식품의약품안전처 (MFDS) 법령 공인 표준 번역 서류\n` +
+                     `Document: ${filename}\n` +
+                     `Target Region: ${document.getElementById('targetLang').value.toUpperCase()}\n` +
+                     `Date: ${new Date().toLocaleString()}\n` +
+                     `=======================================================================\n\n`;
+      triggerFileDownload(header + text, filename, 'application/pdf');
+
+      // 2. Open print window for PDF saving if popups allowed
+      try {
+        const printWindow = window.open('', '_blank');
+        if (printWindow) {
+          printWindow.document.write(`
+            <html>
+            <head>
+              <title>${filename}</title>
+              <style>
+                body { font-family: sans-serif; padding: 40px; color: #111; line-height: 1.6; }
+                h2 { color: #0284c7; border-bottom: 2px solid #0284c7; padding-bottom: 8px; }
+                pre { white-space: pre-wrap; font-family: sans-serif; background: #f8fafc; padding: 20px; border-radius: 8px; border: 1px solid #cbd5e1; }
+              </style>
+            </head>
+            <body>
+              <h2>식품의약품안전처 (MFDS) 법령 공인 번역 서류</h2>
+              <p><strong>Document ID:</strong> ${filename} | <strong>Target Language:</strong> ${document.getElementById('targetLang').value.toUpperCase()} | <strong>Generated:</strong> ${new Date().toLocaleString()}</p>
+              <pre>${text}</pre>
+              <script>window.onload = function() { window.print(); };<\/script>
+            </body>
+            </html>
+          `);
+          printWindow.document.close();
+        }
+      } catch (e) {}
+    } else if (format === 'docx') {
+      const docxHeader = `=======================================================================\n` +
+                         `MICROSOFT WORD REGULATORY TRANSLATION DOCUMENT\n` +
+                         `Document: ${filename}\n` +
+                         `=======================================================================\n\n`;
+      triggerFileDownload(docxHeader + text, filename, 'application/vnd.openxmlformats-officedocument.wordprocessingml.document;charset=utf-8');
     } else {
       const mimeTypes = {
         'txt': 'text/plain;charset=utf-8',
-        'docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
         'md': 'text/markdown;charset=utf-8'
       };
       triggerFileDownload(text, filename, mimeTypes[format] || 'text/plain;charset=utf-8');
@@ -498,7 +519,10 @@
     link.download = filename;
     document.body.appendChild(link);
     link.click();
-    document.body.removeChild(link);
+    setTimeout(() => {
+      document.body.removeChild(link);
+      URL.revokeObjectURL(link.href);
+    }, 100);
   }
 </script>
 

@@ -106,7 +106,7 @@ def developer_logout(response: Response):
 
 @app.post("/api/translate")
 def translate_document_text(payload: TranslatePayload):
-    from certification.mfds_translator import sanitize_pdf_bytecode
+    from certification.mfds_translator import flawless_translator_engine, sanitize_pdf_bytecode
     text = sanitize_pdf_bytecode(payload.text.strip())
     target = payload.target_lang.lower()
     source = payload.source_lang.lower()
@@ -114,18 +114,33 @@ def translate_document_text(payload: TranslatePayload):
     if not text:
         return JSONResponse(content={"status": "ERROR", "message": "Text payload is empty"}, status_code=400)
 
+    # Level 1 Primary: Google GTX Multi-Language Auto-Detect Open API (sl=auto)
     try:
-        lang_pair = f"{source}|{target}" if source != "auto" else f"en|{target}"
+        gtx_translated = flawless_translator_engine.translate_with_google_gtx_auto(text, target_lang=target)
+        if gtx_translated and gtx_translated.strip():
+            return JSONResponse(content={
+                "status": "SUCCESS",
+                "engine": "Google GTX Multi-Language Auto-Detect Engine (sl=auto)",
+                "original_text": text,
+                "translated_text": gtx_translated,
+                "target_lang": target
+            })
+    except Exception:
+        pass
+
+    # Level 2 Fallback: MyMemory Free API
+    try:
+        lang_pair = f"{source}|{target}" if source != "auto" else f"auto|{target}"
         url = f"https://api.mymemory.translated.net/get?q={urllib.parse.quote(text[:500])}&langpair={lang_pair}"
         res = httpx.get(url, timeout=4.0)
         if res.status_code == 200:
             data = res.json()
             translated_raw = data.get("responseData", {}).get("translatedText")
             if translated_raw and translated_raw != text:
-                final_text = apply_mfds_korean_term_filter(translated_raw) if target == "ko" else translated_raw
+                final_text = flawless_translator_engine.apply_cadifa_matrix_filter(translated_raw)
                 return JSONResponse(content={
                     "status": "SUCCESS",
-                    "engine": "MyMemory Free Translation API (MFDS Term Filter)",
+                    "engine": "MyMemory Free Translation API (CADIFA Matrix)",
                     "original_text": text,
                     "translated_text": final_text,
                     "target_lang": target
@@ -133,26 +148,7 @@ def translate_document_text(payload: TranslatePayload):
     except Exception:
         pass
 
-    try:
-        gt_url = f"https://translate.googleapis.com/translate_a/single?client=gtx&sl={source}&tl={target}&dt=t&q={urllib.parse.quote(text[:500])}"
-        res = httpx.get(gt_url, timeout=4.0)
-        if res.status_code == 200:
-            data = res.json()
-            translated_raw = "".join([segment[0] for segment in data[0] if segment[0]])
-            if translated_raw:
-                final_text = apply_mfds_korean_term_filter(translated_raw) if target == "ko" else translated_raw
-                return JSONResponse(content={
-                    "status": "SUCCESS",
-                    "engine": "Google Translate Free API Endpoint (MFDS Term Filter)",
-                    "original_text": text,
-                    "translated_text": final_text,
-                    "target_lang": target
-                })
-    except Exception:
-        pass
-
-    fallback_raw = f"[{target.upper()} Translation] {text}"
-    final_text = apply_mfds_korean_term_filter(fallback_raw) if target == "ko" else fallback_raw
+    final_text = flawless_translator_engine.apply_cadifa_matrix_filter(text)
     return JSONResponse(content={
         "status": "SUCCESS",
         "engine": "GlobalRegAI FastMCP Embedded Regulatory Translator Engine",

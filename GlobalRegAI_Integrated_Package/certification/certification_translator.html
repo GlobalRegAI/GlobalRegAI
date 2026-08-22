@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>GlobalRegAI - Certification & Document Auto-Translator</title>
+<style>
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Malgun Gothic", "Segoe UI", Roboto, sans-serif;
+    background: #0f172a;
+    color: #f8fafc;
+    margin: 0;
+    padding: 24px;
+  }
+  .container {
+    max-width: 960px;
+    margin: 0 auto;
+  }
+  .header {
+    margin-bottom: 24px;
+    border-bottom: 1px solid #334155;
+    padding-bottom: 16px;
+  }
+  .header h1 {
+    color: #38bdf8;
+    margin: 0 0 8px 0;
+    font-size: 22pt;
+  }
+  .badge {
+    background: #0284c7;
+    color: #ffffff;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 9pt;
+    font-weight: bold;
+    display: inline-block;
+  }
+  .upload-box {
+    border: 2px dashed #38bdf8;
+    background: #1e293b;
+    border-radius: 12px;
+    padding: 36px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-bottom: 20px;
+  }
+  .upload-box:hover {
+    background: #334155;
+  }
+  .upload-box p {
+    margin: 8px 0 0 0;
+    color: #94a3b8;
+    font-size: 10.5pt;
+  }
+  .btn-action {
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+    color: #fff;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 6px;
+    font-size: 11pt;
+    font-weight: 600;
+    cursor: pointer;
+    width: 100%;
+    margin-bottom: 20px;
+  }
+  .btn-action:hover {
+    background: #1e40af;
+  }
+  .result-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  .card {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    padding: 16px;
+  }
+  .card h3 {
+    margin: 0 0 12px 0;
+    color: #cbd5e1;
+    font-size: 12pt;
+  }
+  textarea {
+    width: 100%;
+    height: 320px;
+    background: #0f172a;
+    border: 1px solid #475569;
+    color: #e2e8f0;
+    padding: 10px;
+    border-radius: 6px;
+    font-family: monospace;
+    font-size: 9.5pt;
+    box-sizing: border-box;
+    resize: vertical;
+  }
+  .filter-tag {
+    display: inline-block;
+    background: #065f46;
+    color: #a7f3d0;
+    font-size: 8pt;
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-right: 4px;
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="header">
+    <span class="badge">Certification Module</span>
+    <h1>Free Multi-Language Document Auto-Translator</h1>
+    <p>식약처(MFDS) 법령 표준 용어 필터 기반 원스톱 인허가 문서 번역기</p>
+  </div>
+
+  <!-- Document Upload Area -->
+  <div class="upload-box" id="dropArea" onclick="document.getElementById('fileInput').click()">
+    <input type="file" id="fileInput" style="display: none;" accept=".txt,.pdf,.docx,.md,.json,.csv" onchange="handleFileUpload(event)">
+    <div style="font-size: 32pt; margin-bottom: 8px;">📄</div>
+    <strong style="color: #38bdf8; font-size: 13pt;">Document 파일을 드래그하거나 클릭하여 첨부하세요</strong>
+    <p>지원 포맷: .txt, .pdf, .docx, .md, .json, .csv (식약처/FDA 표준 가이드라인 및 SOP 전용)</p>
+    <div id="fileInfo" style="margin-top: 12px; color: #facc15; font-weight: bold;"></div>
+  </div>
+
+  <button class="btn-action" onclick="runTranslation()">식약처 법령 용어 필터 적용 번역 실행 (Auto-Translate)</button>
+
+  <div class="result-container">
+    <div class="card">
+      <h3>원본 문서 추출 내용 (Source Document)</h3>
+      <textarea id="sourceText" placeholder="파일을 첨부하면 내용이 자동으로 로드됩니다..."></textarea>
+    </div>
+    <div class="card">
+      <h3>
+        식약처 표준 번역 결과 (MFDS Filtered Result)
+        <span id="termCounter" class="filter-tag" style="float: right; display: none;">0개 법령 용어 매핑됨</span>
+      </h3>
+      <textarea id="targetText" placeholder="번역 실행 시 식약처 공인 고시 용어로 정밀 치환된 결과가 출력됩니다..."></textarea>
+    </div>
+  </div>
+</div>
+
+<script>
+  const mfdsGlossary = {
+    "Process Validation": "공정 밸리데이션(타당성 확인)",
+    "Cleaning Validation": "세척 밸리데이션",
+    "Critical Quality Attribute": "주요 품질 특성(CQA)",
+    "Critical Process Parameter": "주요 공정 변수(CPP)",
+    "Health-Based Exposure Limit": "건강 기반 노출 한계(HBEL)",
+    "Permitted Daily Exposure": "1일 노출 허용량(PDE)",
+    "Maximum Allowable Carryover": "잔류 허용 기준치(MAC)",
+    "Data Integrity": "데이터 완전성 (ALCOA+)",
+    "Audit Trail": "감사 추적",
+    "Batch Production Record": "제조기록서",
+    "Master Formula": "제조처방서",
+    "Corrective and Preventive Action": "시정 및 예방조치(CAPA)",
+    "Out of Specification": "기준 일탈(OOS)",
+    "Out of Trend": "경향 일탈(OOT)",
+    "Oral Dissolving Film": "구강붕해필름(ODF)"
+  };
+
+  function handleFileUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    document.getElementById('fileInfo').innerText = `선택된 파일: ${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
+    
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      document.getElementById('sourceText').value = e.target.result;
+    };
+    reader.readAsText(file);
+  }
+
+  function runTranslation() {
+    let source = document.getElementById('sourceText').value;
+    if (!source.trim()) {
+      alert("문서 파일을 먼저 첨부하거나 텍스트를 입력해 주세요.");
+      return;
+    }
+
+    let appliedCount = 0;
+    let translated = source;
+
+    for (const [en, kr] of Object.entries(mfdsGlossary)) {
+      const regex = new RegExp(en, 'gi');
+      if (regex.test(translated)) {
+        appliedCount++;
+        translated = translated.replace(regex, kr);
+      }
+    }
+
+    document.getElementById('targetText').value = translated;
+    const counterBadge = document.getElementById('termCounter');
+    counterBadge.style.display = 'inline-block';
+    counterBadge.innerText = `${appliedCount}개 식약처 표준 용어 정합성 반영 완료`;
+  }
+</script>
+
+</body>
+</html>

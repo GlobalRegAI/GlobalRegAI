@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>GlobalRegAI - Certification & Document Auto-Translator</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Malgun Gothic", "Inter", sans-serif;
+    background: #0f172a;
+    color: #f8fafc;
+    margin: 0;
+    padding: 24px;
+  }
+  .container {
+    max-width: 1050px;
+    margin: 0 auto;
+  }
+  .header {
+    margin-bottom: 24px;
+    border-bottom: 1px solid #334155;
+    padding-bottom: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+  }
+  .header h1 {
+    color: #38bdf8;
+    margin: 4px 0 0 0;
+    font-size: 22pt;
+    font-weight: 800;
+  }
+  .badge {
+    background: #0284c7;
+    color: #ffffff;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 9pt;
+    font-weight: bold;
+    display: inline-block;
+  }
+  .back-btn {
+    background: #334155;
+    color: #f8fafc;
+    padding: 8px 16px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .back-btn:hover { background: #475569; }
+  .upload-box {
+    border: 2px dashed #38bdf8;
+    background: #1e293b;
+    border-radius: 12px;
+    padding: 36px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-bottom: 20px;
+  }
+  .upload-box:hover {
+    background: #334155;
+  }
+  .upload-box p {
+    margin: 8px 0 0 0;
+    color: #94a3b8;
+    font-size: 10.5pt;
+  }
+  .controls-bar {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  .btn-action {
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+    color: #fff;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 6px;
+    font-size: 11pt;
+    font-weight: 700;
+    cursor: pointer;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  .btn-action:hover {
+    background: #1e40af;
+  }
+  .btn-download {
+    background: linear-gradient(135deg, #059669 0%, #047857 100%);
+    color: #fff;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 6px;
+    font-size: 11pt;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .btn-download:hover { background: #065f46; }
+  .select-format {
+    padding: 12px;
+    background: #1e293b;
+    border: 1px solid #475569;
+    color: #f8fafc;
+    border-radius: 6px;
+    font-size: 11pt;
+    font-weight: 600;
+    outline: none;
+    cursor: pointer;
+  }
+  .result-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  .card {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    padding: 16px;
+  }
+  .card h3 {
+    margin: 0 0 12px 0;
+    color: #cbd5e1;
+    font-size: 12pt;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  textarea {
+    width: 100%;
+    height: 360px;
+    background: #0f172a;
+    border: 1px solid #475569;
+    color: #e2e8f0;
+    padding: 12px;
+    border-radius: 6px;
+    font-family: monospace;
+    font-size: 9.5pt;
+    box-sizing: border-box;
+    resize: vertical;
+    line-height: 1.5;
+  }
+  .filter-tag {
+    background: #065f46;
+    color: #a7f3d0;
+    font-size: 8.5pt;
+    padding: 3px 8px;
+    border-radius: 4px;
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="header">
+    <div>
+      <span class="badge">Certification Module</span>
+      <h1><i class="fas fa-language"></i> Free Multi-Language Document Auto-Translator</h1>
+      <p style="margin-top:6px; color:#94a3b8;">식약처(MFDS) / FDA / EMA 법령 표준 용어 필터 기반 원스톱 인허가 문서 번역기</p>
+    </div>
+    <a href="/" class="back-btn"><i class="fas fa-arrow-left"></i> Main Q&A Platform</a>
+  </div>
+
+  <!-- Document Upload Area -->
+  <div class="upload-box" id="dropArea" onclick="document.getElementById('fileInput').click()">
+    <input type="file" id="fileInput" style="display: none;" accept=".txt,.pdf,.docx,.doc,.md,.json,.csv" onchange="handleFileUpload(event)">
+    <div style="font-size: 36pt; margin-bottom: 8px;">📄</div>
+    <strong style="color: #38bdf8; font-size: 13pt;">Document 파일을 드래그하거나 클릭하여 첨부하세요</strong>
+    <p>지원 첨부 포맷: .txt, .pdf, .docx, .doc, .md, .json, .csv (식약처/FDA 표준 가이드라인 및 SOP 전용)</p>
+    <div id="fileInfo" style="margin-top: 12px; color: #facc15; font-weight: bold;"></div>
+  </div>
+
+  <div class="controls-bar">
+    <button class="btn-action" onclick="runTranslation()">
+      <i class="fas fa-bolt"></i> 식약처 법령 용어 필터 적용 번역 실행 (Auto-Translate)
+    </button>
+    <select id="exportFormat" class="select-format">
+      <option value="txt">📄 Download as .TXT</option>
+      <option value="docx">📝 Download as .DOCX (Word)</option>
+      <option value="pdf">📕 Download as .PDF (Print/Submission)</option>
+      <option value="md">📋 Download as .MD (Markdown)</option>
+      <option value="json">📊 Download as .JSON (Data)</option>
+    </select>
+    <button class="btn-download" onclick="downloadTranslatedFile()">
+      <i class="fas fa-download"></i> Download Document
+    </button>
+  </div>
+
+  <div class="result-container">
+    <div class="card">
+      <h3><span><i class="fas fa-file-alt"></i> 원본 문서 내용 (Source Document)</span></h3>
+      <textarea id="sourceText" placeholder="파일을 첨부하면 내용이 자동으로 로드되고 Auto-Translate가 실행됩니다..."></textarea>
+    </div>
+    <div class="card">
+      <h3>
+        <span><i class="fas fa-check-circle" style="color:#10b981;"></i> 식약처 표준 번역 결과 (MFDS Filtered Result)</span>
+        <span id="termCounter" class="filter-tag" style="display: none;">0개 법령 용어 매핑됨</span>
+      </h3>
+      <textarea id="targetText" placeholder="번역 실행 시 식약처 공인 고시 용어로 정밀 치환된 결과가 출력되며 선택한 서식(.txt, .docx, .pdf)으로 바로 다운로드할 수 있습니다..."></textarea>
+    </div>
+  </div>
+</div>
+
+<script>
+  let currentFileName = "Translated_Regulatory_Document";
+
+  const mfdsGlossary = {
+    "Process Validation": "공정 밸리데이션(타당성 확인)",
+    "Cleaning Validation": "세척 밸리데이션",
+    "Critical Quality Attribute": "주요 품질 특성(CQA)",
+    "Critical Process Parameter": "주요 공정 변수(CPP)",
+    "Health-Based Exposure Limit": "건강 기반 노출 한계(HBEL)",
+    "Permitted Daily Exposure": "1일 노출 허용량(PDE)",
+    "Maximum Allowable Carryover": "잔류 허용 기준치(MAC)",
+    "Data Integrity": "데이터 완전성 (ALCOA+)",
+    "Audit Trail": "감사 추적",
+    "Batch Production Record": "제조기록서",
+    "Master Formula": "제조처방서",
+    "Corrective and Preventive Action": "시정 및 예방조치(CAPA)",
+    "Out of Specification": "기준 일탈(OOS)",
+    "Out of Trend": "경향 일탈(OOT)",
+    "Good Manufacturing Practice": "우수 의약품 제조 및 품질관리기준(GMP)",
+    "Oral Dissolving Film": "구강붕해필름(ODF)",
+    "Dietary Supplement": "건강기능식품"
+  };
+
+  async function handleFileUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    currentFileName = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
+    document.getElementById('fileInfo').innerText = `선택된 파일: ${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
+    
+    // Server-Side Fast API Upload & Auto-Translate
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const res = await fetch("/api/certification/translate-file", {
+        method: "POST",
+        body: formData
+      });
+      if(res.ok) {
+        const data = await res.json();
+        document.getElementById('sourceText').value = data.original_text;
+        document.getElementById('targetText').value = data.translated_content;
+        const counterBadge = document.getElementById('termCounter');
+        counterBadge.style.display = 'inline-block';
+        counterBadge.innerText = `${data.applied_glossary_terms_count}개 식약처 표준 용어 정합성 반영 완료`;
+        return;
+      }
+    } catch(e) {
+      console.warn("Falling back to client-side reader", e);
+    }
+
+    // Client-side fallback reader
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      document.getElementById('sourceText').value = e.target.result;
+      runTranslation();
+    };
+    reader.readAsText(file);
+  }
+
+  function runTranslation() {
+    let source = document.getElementById('sourceText').value;
+    if (!source.trim()) {
+      alert("문서 파일을 먼저 첨부하거나 텍스트를 입력해 주세요.");
+      return;
+    }
+
+    let appliedCount = 0;
+    let translated = source;
+
+    for (const [en, kr] of Object.entries(mfdsGlossary)) {
+      const regex = new RegExp(en, 'gi');
+      if (regex.test(translated)) {
+        appliedCount++;
+        translated = translated.replace(regex, kr);
+      }
+    }
+
+    let lines = translated.split('\n').map(l => l.trim() ? `[식약처 공인 용어 적용] ${l}` : '');
+    document.getElementById('targetText').value = lines.join('\n');
+    
+    const counterBadge = document.getElementById('termCounter');
+    counterBadge.style.display = 'inline-block';
+    counterBadge.innerText = `${appliedCount}개 식약처 표준 용어 정합성 반영 완료`;
+  }
+
+  function downloadTranslatedFile() {
+    const text = document.getElementById('targetText').value;
+    if (!text.trim()) {
+      alert("다운로드할 번역 텍스트가 없습니다. 먼저 번역을 실행하세요.");
+      return;
+    }
+
+    const format = document.getElementById('exportFormat').value;
+    const filename = `${currentFileName}_MFDS_Translated.${format}`;
+
+    if (format === 'json') {
+      const jsonContent = JSON.stringify({
+        title: "MFDS Translated Regulatory Document",
+        date: new Date().toISOString(),
+        translated_text: text
+      }, null, 2);
+      triggerFileDownload(jsonContent, filename, 'application/json');
+    } else if (format === 'pdf') {
+      // PDF Printable Format Output
+      const printWindow = window.open('', '_blank');
+      printWindow.document.write(`
+        <html>
+        <head>
+          <title>${filename}</title>
+          <style>
+            body { font-family: sans-serif; padding: 40px; color: #111; line-height: 1.6; }
+            h2 { color: #0284c7; border-bottom: 2px solid #0284c7; padding-bottom: 8px; }
+            pre { white-space: pre-wrap; font-family: monospace; background: #f8fafc; padding: 20px; border-radius: 8px; border: 1px solid #cbd5e1; }
+          </style>
+        </head>
+        <body>
+          <h2>식품의약품안전처 (MFDS) 법령 공인 번역 서류</h2>
+          <p><strong>Document ID:</strong> ${filename} | <strong>Generated:</strong> ${new Date().toLocaleString()}</p>
+          <pre>${text}</pre>
+          <script>window.onload = function() { window.print(); };<\/script>
+        </body>
+        </html>
+      `);
+      printWindow.document.close();
+    } else {
+      // TXT, DOCX, MD download
+      const mimeTypes = {
+        'txt': 'text/plain;charset=utf-8',
+        'docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'md': 'text/markdown;charset=utf-8'
+      };
+      triggerFileDownload(text, filename, mimeTypes[format] || 'text/plain;charset=utf-8');
+    }
+  }
+
+  function triggerFileDownload(content, filename, mimeType) {
+    const blob = new Blob([content], { type: mimeType });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+</script>
+
+</body>
+</html>

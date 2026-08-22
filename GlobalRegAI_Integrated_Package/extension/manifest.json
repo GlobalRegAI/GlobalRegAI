@@ -1,0 +1,25 @@
+{
+  "manifest_version": 3,
+  "name": "GlobalRegAI Assistant",
+  "version": "1.0.0",
+  "description": "Aside-style AI Browser Agent for GMP Re-approval & Regulatory Gap Diagnosis",
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "storage"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "GlobalRegAI GMP Auditor"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": [
+        "content_script.js"
+      ]
+    }
+  ]
+}

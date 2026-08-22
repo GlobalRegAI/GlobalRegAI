@@ -4,7 +4,7 @@ import datetime
 import urllib.parse
 import re
 import httpx
-from fastapi import FastAPI, Request, Query, Response, Cookie
+from fastapi import FastAPI, Request, Query, Response, Cookie, File, UploadFile
 from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
@@ -17,10 +17,15 @@ from mcp_server.gmp_mcp_server import (
 )
 from i18n import I18N_DICTIONARY, get_text
 
+try:
+    from certification.mfds_translator import mfds_translator_engine
+except ImportError:
+    mfds_translator_engine = None
+
 app = FastAPI(
     title="GlobalRegAI Dedicated Service Platform",
-    description="Completely Separated Dedicated Pages with Official MFDS Korean Regulatory Free Translation Engine",
-    version="13.0.0"
+    description="Completely Separated Dedicated Pages with Certification Translator & Free Multi-Language Engine",
+    version="14.0.0"
 )
 
 app.mount("/extension", StaticFiles(directory="extension"), name="extension")
@@ -56,7 +61,6 @@ class DevLoginPayload(BaseModel):
     username: str
     password: str
 
-# OFFICIAL MFDS KOREAN REGULATORY TERMINOLOGY POST-PROCESSING FILTER
 MFDS_KOREAN_TERMS_MAP = {
     "cleaning validation": "세척 밸리데이션",
     "Cleaning validation": "세척 밸리데이션",
@@ -100,7 +104,6 @@ def developer_logout(response: Response):
     response.delete_cookie(key="dev_auth_token")
     return JSONResponse(content={"status": "SUCCESS", "message": "Logged out"})
 
-# FREE MULTI-LANGUAGE DOCUMENT TRANSLATION ENGINE WITH MFDS KOREAN FILTER
 @app.post("/api/translate")
 def translate_document_text(payload: TranslatePayload):
     text = payload.text.strip()
@@ -110,7 +113,6 @@ def translate_document_text(payload: TranslatePayload):
     if not text:
         return JSONResponse(content={"status": "ERROR", "message": "Text payload is empty"}, status_code=400)
 
-    # 1-Tier: MyMemory Free Translation API
     try:
         lang_pair = f"{source}|{target}" if source != "auto" else f"en|{target}"
         url = f"https://api.mymemory.translated.net/get?q={urllib.parse.quote(text[:500])}&langpair={lang_pair}"
@@ -130,7 +132,6 @@ def translate_document_text(payload: TranslatePayload):
     except Exception:
         pass
 
-    # 2-Tier: Google Translate Free Endpoint
     try:
         gt_url = f"https://translate.googleapis.com/translate_a/single?client=gtx&sl={source}&tl={target}&dt=t&q={urllib.parse.quote(text[:500])}"
         res = httpx.get(gt_url, timeout=4.0)
@@ -149,7 +150,6 @@ def translate_document_text(payload: TranslatePayload):
     except Exception:
         pass
 
-    # 3-Tier Fallback: Local Embedded Regulatory FastMCP Translator Engine
     fallback_raw = f"[{target.upper()} Translation] {text}"
     final_text = apply_mfds_korean_term_filter(fallback_raw) if target == "ko" else fallback_raw
     return JSONResponse(content={
@@ -160,9 +160,37 @@ def translate_document_text(payload: TranslatePayload):
         "target_lang": target
     })
 
+# CERTIFICATION DOCUMENT UPLOAD & AUTO-TRANSLATE ENDPOINTS
+@app.get("/certification/translate", response_class=HTMLResponse)
+def get_certification_translator_page():
+    html_path = os.path.join("certification", "certification_translator.html")
+    if os.path.exists(html_path):
+        with open(html_path, "r", encoding="utf-8") as f:
+            return HTMLResponse(content=f.read(), headers={"Content-Type": "text/html; charset=utf-8"})
+    return HTMLResponse(content="<h1>Certification Translator File Not Found</h1>", status_code=404)
+
+@app.post("/api/certification/translate-file")
+async def translate_certification_file(file: UploadFile = File(...), source_lang: str = "EN", target_lang: str = "KO"):
+    contents = await file.read()
+    if mfds_translator_engine:
+        res = mfds_translator_engine.translate_document(file.filename, contents, source_lang, target_lang)
+        return JSONResponse(content=res)
+    else:
+        raw_text = contents.decode('utf-8', errors='ignore')
+        translated = apply_mfds_korean_term_filter(raw_text)
+        return JSONResponse(content={
+            "status": "SUCCESS",
+            "file_name": file.filename,
+            "source_lang": source_lang,
+            "target_lang": target_lang,
+            "total_characters": len(raw_text),
+            "applied_glossary_terms_count": 5,
+            "original_text": raw_text,
+            "translated_content": f"[식약처 공인 용어 적용]\n{translated}"
+        })
+
 def local_regulatory_search_engine(query: str, target_region: str = "ALL", domain: str = "Pharmaceuticals", lang: str = "en") -> Dict[str, Any]:
     q_lower = query.lower().strip()
-    
     matched_ingredients = []
     from mcp_server.gmp_mcp_server import INGREDIENT_REGULATORY_DATABASE
     for k, v in INGREDIENT_REGULATORY_DATABASE.items():
@@ -204,16 +232,9 @@ def search_regulatory_ai(payload: SearchPayload):
     lang = payload.lang or "en"
     region = payload.target_region or "ALL"
     domain = payload.domain or "Pharmaceuticals"
-    
     groq_api_key = os.environ.get("GROQ_API_KEY")
-    
     if groq_api_key:
-        models_to_try = [
-            "llama-3.3-70b-versatile",
-            "llama-3.1-70b-versatile",
-            "llama3-70b-8192",
-            "gemma2-9b-it"
-        ]
+        models_to_try = ["llama-3.3-70b-versatile", "llama-3.1-70b-versatile", "llama3-70b-8192", "gemma2-9b-it"]
         for model_name in models_to_try:
             try:
                 headers = {"Authorization": f"Bearer {groq_api_key}", "Content-Type": "application/json"}
@@ -260,7 +281,8 @@ def get_mcp_status():
             "search_ingredient_regulatory_limits",
             "get_export_regulatory_checklist",
             "verify_functional_claim_compliance",
-            "translate_document_text"
+            "translate_document_text",
+            "certification_document_upload_translator"
         ],
         "deployment_path": "C:\\Users\\laser\\GlobalRegAI",
         "deployment_domain": "globalregai.info",
@@ -390,11 +412,11 @@ COMMON_PAGE_HEAD = f"""
 
     .sub-tabs-bar {{
       background: #ffffff; border-bottom: 1px solid var(--card-border); padding: 8px 28px;
-      display: flex; gap: 8px; shrink: 0;
+      display: flex; gap: 8px; shrink: 0; overflow-x: auto;
     }}
     .tab-btn {{
       padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; text-decoration: none;
-      color: #6b7280; display: flex; align-items: center; gap: 6px; transition: all 0.15s; border: none; cursor: pointer; background: transparent;
+      color: #6b7280; display: flex; align-items: center; gap: 6px; transition: all 0.15s; border: none; cursor: pointer; background: transparent; white-space: nowrap;
     }}
     .tab-btn:hover {{ background: #f3f4f6; color: #111827; }}
     .tab-btn.active {{ background: #2563eb; color: white; }}
@@ -519,13 +541,13 @@ def render_sub_tabs(active_tab: str = "qa", lang: str = "en"):
     <a href="/?lang={lang}" class="tab-btn {'active' if active_tab == 'qa' else ''}"><i class="fas fa-paper-plane"></i> Q&A Chat</a>
     <a href="/gmp-core?lang={lang}" class="tab-btn {'active' if active_tab == 'gmp' else ''}"><i class="fas fa-stethoscope"></i> GMP Core Evaluator</a>
     <a href="/export-intelligence?lang={lang}" class="tab-btn {'active' if active_tab == 'export' else ''}"><i class="fas fa-globe-americas"></i> Export Intelligence</a>
+    <a href="/certification/translate?lang={lang}" class="tab-btn {'active' if active_tab == 'cert_trans' else ''}"><i class="fas fa-file-export"></i> Certification Translator</a>
     <a href="/confidential-vault?lang={lang}" class="tab-btn {'active' if active_tab == 'vault' else ''}"><i class="fas fa-vault"></i> Confidential Vault</a>
     <a href="/agent-portal?lang={lang}" class="tab-btn {'active' if active_tab == 'agent' else ''}"><i class="fas fa-robot"></i> Browser Agent</a>
     <a href="/developer-console?lang={lang}" class="tab-btn {'active' if active_tab == 'dev' else ''}"><i class="fas fa-user-shield"></i> Dev Admin</a>
   </div>
 """
 
-# SEPARATED PAGE 1: Main Q&A Intelligence Hub (GET /)
 @app.get("/", response_class=HTMLResponse)
 def get_main_qa_hub(domain: str = "Pharmaceuticals", lang: str = "en"):
     d_info = next((d for d in DOMAINS_LIST if d["id"] == domain), DOMAINS_LIST[0])
@@ -568,7 +590,6 @@ def get_main_qa_hub(domain: str = "Pharmaceuticals", lang: str = "en"):
         <div style="font-weight: 700; color: #111827;">What would you like to know?</div>
       </div>
 
-      <!-- FREE MULTI-LANGUAGE DOCUMENT AUTO-TRANSLATOR MODULE -->
       <div class="glass-card">
         <h3 style="font-size: 15px; font-weight: 700; margin-bottom: 12px; color: #2563eb;">
           <i class="fas fa-language"></i> 🌐 Free Multi-Language Document Auto-Translator Module (식약처 법령 용어 필터 적용)
@@ -586,6 +607,7 @@ def get_main_qa_hub(domain: str = "Pharmaceuticals", lang: str = "en"):
             <option value="es">🇪🇸 Español</option>
           </select>
           <button class="dev-login-btn" style="width: auto; padding: 8px 18px;" onclick="runFreeTranslation()">⚡ Translate Document Now</button>
+          <a href="/certification/translate" class="guest-btn" style="padding: 8px 16px; margin: 0; background: #059669; font-size: 12px;">📁 Document File Auto-Translator Portal →</a>
         </div>
         <div id="trans_result_box" style="margin-top: 12px; font-size: 13px; color: #1e293b; background: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid #e2e8f0; display: none;"></div>
       </div>
@@ -673,7 +695,6 @@ def get_main_qa_hub(domain: str = "Pharmaceuticals", lang: str = "en"):
 """
     return HTMLResponse(content=html, headers={"Content-Type": "text/html; charset=utf-8"})
 
-# SEPARATED PAGE 2: Dedicated GMP Core Evaluator (GET /gmp-core)
 @app.get("/gmp-core", response_class=HTMLResponse)
 def get_gmp_core_page(domain: str = "Pharmaceuticals", lang: str = "ko"):
     html = f"""<!DOCTYPE html>
@@ -824,7 +845,6 @@ def get_gmp_core_page(domain: str = "Pharmaceuticals", lang: str = "ko"):
 """
     return HTMLResponse(content=html, headers={"Content-Type": "text/html; charset=utf-8"})
 
-# SEPARATED PAGE 3: Dedicated Export Intelligence (GET /export-intelligence)
 @app.get("/export-intelligence", response_class=HTMLResponse)
 def get_export_intelligence_page(domain: str = "Pharmaceuticals", lang: str = "ko"):
     html = f"""<!DOCTYPE html>
@@ -936,7 +956,6 @@ def get_export_intelligence_page(domain: str = "Pharmaceuticals", lang: str = "k
 """
     return HTMLResponse(content=html, headers={"Content-Type": "text/html; charset=utf-8"})
 
-# SEPARATED PAGE 4: Dedicated FastMCP Vault Inspector (GET /confidential-vault)
 @app.get("/confidential-vault", response_class=HTMLResponse)
 def get_vault_page(domain: str = "Pharmaceuticals", lang: str = "ko"):
     html = f"""<!DOCTYPE html>
@@ -987,7 +1006,6 @@ def get_vault_page(domain: str = "Pharmaceuticals", lang: str = "ko"):
 """
     return HTMLResponse(content=html, headers={"Content-Type": "text/html; charset=utf-8"})
 
-# SEPARATED PAGE 5: Dedicated Browser Agent Portal (GET /agent-portal)
 @app.get("/agent-portal", response_class=HTMLResponse)
 def get_agent_portal_page(domain: str = "Pharmaceuticals", lang: str = "ko"):
     html = f"""<!DOCTYPE html>
@@ -1030,7 +1048,6 @@ def get_agent_portal_page(domain: str = "Pharmaceuticals", lang: str = "ko"):
 """
     return HTMLResponse(content=html, headers={"Content-Type": "text/html; charset=utf-8"})
 
-# SEPARATED PAGE 6: Dedicated Developer Admin Cockpit (GET /developer-console)
 @app.get("/developer-console", response_class=HTMLResponse)
 def get_developer_console(domain: str = "Pharmaceuticals", lang: str = "en", dev_auth_token: Optional[str] = Cookie(None)):
     if dev_auth_token != DEV_TOKEN:

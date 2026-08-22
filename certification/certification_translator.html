@@ -18,7 +18,7 @@
     margin: 0 auto;
   }
   .header {
-    margin-bottom: 24px;
+    margin-bottom: 20px;
     border-bottom: 1px solid #334155;
     padding-bottom: 16px;
     display: flex;
@@ -57,31 +57,54 @@
     border: 2px dashed #38bdf8;
     background: #1e293b;
     border-radius: 12px;
-    padding: 36px;
+    padding: 30px;
     text-align: center;
     cursor: pointer;
     transition: all 0.2s;
-    margin-bottom: 20px;
+    margin-bottom: 18px;
   }
   .upload-box:hover {
     background: #334155;
   }
   .upload-box p {
-    margin: 8px 0 0 0;
+    margin: 6px 0 0 0;
     color: #94a3b8;
-    font-size: 10.5pt;
+    font-size: 10pt;
   }
   .controls-bar {
     display: flex;
-    gap: 12px;
+    gap: 10px;
     align-items: center;
     margin-bottom: 20px;
+    background: #1e293b;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid #334155;
+  }
+  .lang-select-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: #94a3b8;
+    font-weight: 700;
+  }
+  .select-control {
+    padding: 10px 12px;
+    background: #0f172a;
+    border: 1px solid #475569;
+    color: #f8fafc;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    outline: none;
+    cursor: pointer;
   }
   .btn-action {
     background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
     color: #fff;
     border: none;
-    padding: 12px 24px;
+    padding: 10px 20px;
     border-radius: 6px;
     font-size: 11pt;
     font-weight: 700;
@@ -99,7 +122,7 @@
     background: linear-gradient(135deg, #059669 0%, #047857 100%);
     color: #fff;
     border: none;
-    padding: 12px 24px;
+    padding: 10px 20px;
     border-radius: 6px;
     font-size: 11pt;
     font-weight: 700;
@@ -109,17 +132,7 @@
     gap: 8px;
   }
   .btn-download:hover { background: #065f46; }
-  .select-format {
-    padding: 12px;
-    background: #1e293b;
-    border: 1px solid #475569;
-    color: #f8fafc;
-    border-radius: 6px;
-    font-size: 11pt;
-    font-weight: 600;
-    outline: none;
-    cursor: pointer;
-  }
+
   .result-container {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -160,6 +173,56 @@
     padding: 3px 8px;
     border-radius: 4px;
   }
+
+  /* FORMAT SELECTION MODAL */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(15, 23, 42, 0.8);
+    backdrop-filter: blur(4px);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+  }
+  .modal-card {
+    background: #1e293b;
+    border: 1px solid #38bdf8;
+    border-radius: 12px;
+    padding: 24px;
+    width: 420px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+  }
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    border-bottom: 1px solid #334155;
+    padding-bottom: 12px;
+  }
+  .modal-header h3 { margin: 0; color: #38bdf8; font-size: 15px; }
+  .format-option-btn {
+    width: 100%;
+    background: #0f172a;
+    border: 1px solid #475569;
+    color: #f8fafc;
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: all 0.15s;
+  }
+  .format-option-btn:hover {
+    border-color: #38bdf8;
+    background: #1e293b;
+    color: #38bdf8;
+  }
 </style>
 </head>
 <body>
@@ -169,7 +232,7 @@
     <div>
       <span class="badge">Certification Module</span>
       <h1><i class="fas fa-language"></i> Free Multi-Language Document Auto-Translator</h1>
-      <p style="margin-top:6px; color:#94a3b8;">식약처(MFDS) / FDA / EMA 법령 표준 용어 필터 기반 원스톱 인허가 문서 번역기</p>
+      <p style="margin-top:4px; color:#94a3b8;">식약처(MFDS) / FDA / EMA 법령 표준 용어 필터 기반 원스톱 인허가 문서 번역기</p>
     </div>
     <a href="/" class="back-btn"><i class="fas fa-arrow-left"></i> Main Q&A Platform</a>
   </div>
@@ -177,24 +240,43 @@
   <!-- Document Upload Area -->
   <div class="upload-box" id="dropArea" onclick="document.getElementById('fileInput').click()">
     <input type="file" id="fileInput" style="display: none;" accept=".txt,.pdf,.docx,.doc,.md,.json,.csv" onchange="handleFileUpload(event)">
-    <div style="font-size: 36pt; margin-bottom: 8px;">📄</div>
+    <div style="font-size: 32pt; margin-bottom: 6px;">📄</div>
     <strong style="color: #38bdf8; font-size: 13pt;">Document 파일을 드래그하거나 클릭하여 첨부하세요</strong>
     <p>지원 첨부 포맷: .txt, .pdf, .docx, .doc, .md, .json, .csv (식약처/FDA 표준 가이드라인 및 SOP 전용)</p>
-    <div id="fileInfo" style="margin-top: 12px; color: #facc15; font-weight: bold;"></div>
+    <div id="fileInfo" style="margin-top: 10px; color: #facc15; font-weight: bold;"></div>
   </div>
 
   <div class="controls-bar">
+    <div class="lang-select-group">
+      <span>From:</span>
+      <select id="sourceLang" class="select-control">
+        <option value="auto" selected>🌐 Auto-Detect Language (자동 감지)</option>
+        <option value="en">🇺🇸 English (FDA / EMA)</option>
+        <option value="ko">🇰🇷 한국어 (식약처 MFDS)</option>
+        <option value="ja">🇯🇵 日本語 (PMDA)</option>
+        <option value="zh">🇨🇳 中文 (NMPA)</option>
+        <option value="de">🇩🇪 Deutsch (EMA)</option>
+      </select>
+    </div>
+
+    <div class="lang-select-group">
+      <span>To:</span>
+      <select id="targetLang" class="select-control">
+        <option value="ko" selected>🇰🇷 한국어 (식약처 공식 법령 용어 필터)</option>
+        <option value="en">🇺🇸 English (FDA Standards)</option>
+        <option value="ja">🇯🇵 日本語 (PMDA Standards)</option>
+        <option value="zh">🇨🇳 中文 (NMPA Standards)</option>
+        <option value="de">🇩🇪 Deutsch (EMA Standards)</option>
+        <option value="fr">🇫🇷 Français</option>
+        <option value="es">🇪🇸 Español</option>
+      </select>
+    </div>
+
     <button class="btn-action" onclick="runTranslation()">
-      <i class="fas fa-bolt"></i> 식약처 법령 용어 필터 적용 번역 실행 (Auto-Translate)
+      <i class="fas fa-bolt"></i> 번역 실행 (Auto-Translate)
     </button>
-    <select id="exportFormat" class="select-format">
-      <option value="txt">📄 Download as .TXT</option>
-      <option value="docx">📝 Download as .DOCX (Word)</option>
-      <option value="pdf">📕 Download as .PDF (Print/Submission)</option>
-      <option value="md">📋 Download as .MD (Markdown)</option>
-      <option value="json">📊 Download as .JSON (Data)</option>
-    </select>
-    <button class="btn-download" onclick="downloadTranslatedFile()">
+
+    <button class="btn-download" onclick="openDownloadModal()">
       <i class="fas fa-download"></i> Download Document
     </button>
   </div>
@@ -202,15 +284,42 @@
   <div class="result-container">
     <div class="card">
       <h3><span><i class="fas fa-file-alt"></i> 원본 문서 내용 (Source Document)</span></h3>
-      <textarea id="sourceText" placeholder="파일을 첨부하면 내용이 자동으로 로드되고 Auto-Translate가 실행됩니다..."></textarea>
+      <textarea id="sourceText" placeholder="파일을 첨부하거나 입력하면 내용이 자동으로 로드되고 Auto-Translate가 실행됩니다..."></textarea>
     </div>
     <div class="card">
       <h3>
         <span><i class="fas fa-check-circle" style="color:#10b981;"></i> 식약처 표준 번역 결과 (MFDS Filtered Result)</span>
         <span id="termCounter" class="filter-tag" style="display: none;">0개 법령 용어 매핑됨</span>
       </h3>
-      <textarea id="targetText" placeholder="번역 실행 시 식약처 공인 고시 용어로 정밀 치환된 결과가 출력되며 선택한 서식(.txt, .docx, .pdf)으로 바로 다운로드할 수 있습니다..."></textarea>
+      <textarea id="targetText" placeholder="번역 실행 시 식약처 공인 고시 용어로 정밀 치환된 결과가 출력되며 Download Document 버튼을 눌러 서식을 선택할 수 있습니다..."></textarea>
     </div>
+  </div>
+</div>
+
+<!-- FORMAT SELECTION MODAL -->
+<div class="modal-overlay" id="downloadModal">
+  <div class="modal-card">
+    <div class="modal-header">
+      <h3><i class="fas fa-file-export"></i> Select Download Document Format</h3>
+      <i class="fas fa-times" style="cursor:pointer; color:#94a3b8;" onclick="closeDownloadModal()"></i>
+    </div>
+    <p style="font-size:12px; color:#94a3b8; margin-bottom:16px;">원하시는 번역 서류 저장 포맷을 선택하세요:</p>
+    
+    <button class="format-option-btn" onclick="executeFileDownload('txt')">
+      <span>📄 .TXT (General Text File)</span> <i class="fas fa-download"></i>
+    </button>
+    <button class="format-option-btn" onclick="executeFileDownload('docx')">
+      <span>📝 .DOCX (Microsoft Word Document)</span> <i class="fas fa-download"></i>
+    </button>
+    <button class="format-option-btn" onclick="executeFileDownload('pdf')">
+      <span>📕 .PDF (Print & Submission Document)</span> <i class="fas fa-download"></i>
+    </button>
+    <button class="format-option-btn" onclick="executeFileDownload('md')">
+      <span>📋 .MD (Markdown Document)</span> <i class="fas fa-download"></i>
+    </button>
+    <button class="format-option-btn" onclick="executeFileDownload('json')">
+      <span>📊 .JSON (Structured Data)</span> <i class="fas fa-download"></i>
+    </button>
   </div>
 </div>
 
@@ -244,12 +353,16 @@
     currentFileName = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
     document.getElementById('fileInfo').innerText = `선택된 파일: ${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
     
-    // Server-Side Fast API Upload & Auto-Translate
+    const sourceLang = document.getElementById('sourceLang').value;
+    const targetLang = document.getElementById('targetLang').value;
+
     const formData = new FormData();
     formData.append("file", file);
+    formData.append("source_lang", sourceLang);
+    formData.append("target_lang", targetLang);
 
     try {
-      const res = await fetch("/api/certification/translate-file", {
+      const res = await fetch(`/api/certification/translate-file?source_lang=${sourceLang}&target_lang=${targetLang}`, {
         method: "POST",
         body: formData
       });
@@ -266,7 +379,6 @@
       console.warn("Falling back to client-side reader", e);
     }
 
-    // Client-side fallback reader
     const reader = new FileReader();
     reader.onload = function(e) {
       document.getElementById('sourceText').value = e.target.result;
@@ -275,13 +387,33 @@
     reader.readAsText(file);
   }
 
-  function runTranslation() {
+  async function runTranslation() {
     let source = document.getElementById('sourceText').value;
     if (!source.trim()) {
       alert("문서 파일을 먼저 첨부하거나 텍스트를 입력해 주세요.");
       return;
     }
 
+    const sourceLang = document.getElementById('sourceLang').value;
+    const targetLang = document.getElementById('targetLang').value;
+
+    try {
+      const res = await fetch('/api/translate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: source, source_lang: sourceLang, target_lang: targetLang })
+      });
+      if(res.ok) {
+        const data = await res.json();
+        document.getElementById('targetText').value = data.translated_text;
+        const counterBadge = document.getElementById('termCounter');
+        counterBadge.style.display = 'inline-block';
+        counterBadge.innerText = `[${targetLang.toUpperCase()}] Engine: ${data.engine}`;
+        return;
+      }
+    } catch(e) {}
+
+    // Fallback Client-side Glossing
     let appliedCount = 0;
     let translated = source;
 
@@ -301,25 +433,34 @@
     counterBadge.innerText = `${appliedCount}개 식약처 표준 용어 정합성 반영 완료`;
   }
 
-  function downloadTranslatedFile() {
+  function openDownloadModal() {
     const text = document.getElementById('targetText').value;
     if (!text.trim()) {
-      alert("다운로드할 번역 텍스트가 없습니다. 먼저 번역을 실행하세요.");
+      alert("다운로드할 번역 텍스트가 없습니다. 먼저 번역을 실행해 주세요.");
       return;
     }
+    document.getElementById('downloadModal').style.display = 'flex';
+  }
 
-    const format = document.getElementById('exportFormat').value;
+  function closeDownloadModal() {
+    document.getElementById('downloadModal').style.display = 'none';
+  }
+
+  function executeFileDownload(format) {
+    closeDownloadModal();
+    const text = document.getElementById('targetText').value;
     const filename = `${currentFileName}_MFDS_Translated.${format}`;
 
     if (format === 'json') {
       const jsonContent = JSON.stringify({
         title: "MFDS Translated Regulatory Document",
+        source_lang: document.getElementById('sourceLang').value,
+        target_lang: document.getElementById('targetLang').value,
         date: new Date().toISOString(),
         translated_text: text
       }, null, 2);
       triggerFileDownload(jsonContent, filename, 'application/json');
     } else if (format === 'pdf') {
-      // PDF Printable Format Output
       const printWindow = window.open('', '_blank');
       printWindow.document.write(`
         <html>
@@ -333,7 +474,7 @@
         </head>
         <body>
           <h2>식품의약품안전처 (MFDS) 법령 공인 번역 서류</h2>
-          <p><strong>Document ID:</strong> ${filename} | <strong>Generated:</strong> ${new Date().toLocaleString()}</p>
+          <p><strong>Document ID:</strong> ${filename} | <strong>Target Language:</strong> ${document.getElementById('targetLang').value.toUpperCase()} | <strong>Generated:</strong> ${new Date().toLocaleString()}</p>
           <pre>${text}</pre>
           <script>window.onload = function() { window.print(); };<\/script>
         </body>
@@ -341,7 +482,6 @@
       `);
       printWindow.document.close();
     } else {
-      // TXT, DOCX, MD download
       const mimeTypes = {
         'txt': 'text/plain;charset=utf-8',
         'docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',

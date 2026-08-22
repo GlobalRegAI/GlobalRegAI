@@ -106,7 +106,8 @@ def developer_logout(response: Response):
 
 @app.post("/api/translate")
 def translate_document_text(payload: TranslatePayload):
-    text = payload.text.strip()
+    from certification.mfds_translator import sanitize_pdf_bytecode
+    text = sanitize_pdf_bytecode(payload.text.strip())
     target = payload.target_lang.lower()
     source = payload.source_lang.lower()
     

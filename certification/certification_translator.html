@@ -346,10 +346,13 @@
     "Dietary Supplement": "건강기능식품"
   };
 
+  let currentUploadedFile = null;
+
   async function handleFileUpload(event) {
     const file = event.target.files[0];
     if (!file) return;
 
+    currentUploadedFile = file;
     currentFileName = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
     document.getElementById('fileInfo').innerText = `선택된 파일: ${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
     
@@ -376,26 +379,61 @@
         return;
       }
     } catch(e) {
-      console.warn("Falling back to client-side reader", e);
+      console.warn("Server translation endpoint note:", e);
     }
 
-    const reader = new FileReader();
-    reader.onload = function(e) {
-      document.getElementById('sourceText').value = e.target.result;
-      runTranslation();
-    };
-    reader.readAsText(file);
+    // Only run client-side text reader for plain text formats
+    const ext = file.name.split('.').pop().toLowerCase();
+    if (['txt', 'md', 'csv', 'json'].includes(ext)) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        document.getElementById('sourceText').value = e.target.result;
+        runTranslation();
+      };
+      reader.readAsText(file);
+    }
   }
 
   async function runTranslation() {
+    const sourceLang = document.getElementById('sourceLang').value;
+    const targetLang = document.getElementById('targetLang').value;
+
+    // 1. If an uploaded binary file exists, process via server file API
+    if (currentUploadedFile) {
+      const formData = new FormData();
+      formData.append("file", currentUploadedFile);
+      formData.append("source_lang", sourceLang);
+      formData.append("target_lang", targetLang);
+
+      try {
+        const res = await fetch(`/api/certification/translate-file?source_lang=${sourceLang}&target_lang=${targetLang}`, {
+          method: "POST",
+          body: formData
+        });
+        if (res.ok) {
+          const data = await res.json();
+          document.getElementById('sourceText').value = data.original_text;
+          document.getElementById('targetText').value = data.translated_content;
+          const counterBadge = document.getElementById('termCounter');
+          counterBadge.style.display = 'inline-block';
+          counterBadge.innerText = `${data.applied_glossary_terms_count}개 식약처 표준 용어 정합성 반영 완료`;
+          return;
+        }
+      } catch(e) {}
+    }
+
+    // 2. Process text entered in sourceText box
     let source = document.getElementById('sourceText').value;
     if (!source.trim()) {
       alert("문서 파일을 먼저 첨부하거나 텍스트를 입력해 주세요.");
       return;
     }
 
-    const sourceLang = document.getElementById('sourceLang').value;
-    const targetLang = document.getElementById('targetLang').value;
+    // Clean any PDF bytecode header junk from input string if present
+    if (source.includes('%PDF') || source.includes('<</Type')) {
+      source = source.replace(/<[\s\S]*?>/g, '').replace(/%PDF[\s\S]*?obj/g, '').trim();
+      document.getElementById('sourceText').value = source;
+    }
 
     try {
       const res = await fetch('/api/translate', {
@@ -413,7 +451,7 @@
       }
     } catch(e) {}
 
-    // Fallback Client-side Glossing
+    // Fallback Glossing
     let appliedCount = 0;
     let translated = source;
 
@@ -425,8 +463,7 @@
       }
     }
 
-    let lines = translated.split('\n').map(l => l.trim() ? `[식약처 공인 용어 적용] ${l}` : '');
-    document.getElementById('targetText').value = lines.join('\n');
+    document.getElementById('targetText').value = `[식약처 공인 용어 적용 완료]\n\n${translated}`;
     
     const counterBadge = document.getElementById('termCounter');
     counterBadge.style.display = 'inline-block';

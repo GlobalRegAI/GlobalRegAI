@@ -1,5 +1,9 @@
 import sys
+import os
 import httpx
+
+sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+sys.stderr.reconfigure(encoding='utf-8', errors='replace')
 
 def test_translation_and_multilingual():
     print("=== TESTING FREE MULTI-LANGUAGE DOCUMENT TRANSLATION ENGINE ===", flush=True)
@@ -15,7 +19,7 @@ def test_translation_and_multilingual():
 
     # 2. Test Multi-Language URL persistence across 5 languages
     languages = ["ko", "en", "ja", "zh", "de"]
-    routes = ["/", "/gmp-core", "/export-intelligence", "/agent-portal", "/confidential-vault", "/developer-console"]
+    routes = ["/", "/gmp-core", "/export-intelligence", "/certification/translate", "/agent-portal", "/confidential-vault", "/developer-console"]
     
     for lang in languages:
         for route in routes:
@@ -23,7 +27,7 @@ def test_translation_and_multilingual():
             r = client.get(url)
             assert r.status_code == 200, f"Failed URL {url} with status {r.status_code}"
     
-    print(f"SUCCESS [HTTP 200]: Simulated 30 Multilingual Route Combinations (5 Languages x 6 Separated Pages) 100% OK!", flush=True)
+    print(f"SUCCESS [HTTP 200]: Simulated Multilingual Route Combinations (5 Languages x 7 Separated Pages) 100% OK!", flush=True)
 
 if __name__ == "__main__":
     test_translation_and_multilingual()

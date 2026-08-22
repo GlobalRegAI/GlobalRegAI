@@ -189,6 +189,21 @@ async def translate_certification_file(file: UploadFile = File(...), source_lang
             "translated_content": f"[식약처 공인 용어 적용]\n{translated}"
         })
 
+@app.get("/api/gov/fda-label")
+def get_gov_fda_label(drug_name: str = "phenoxyethanol"):
+    from engine.gov_api_client import gov_api_client
+    return JSONResponse(content=gov_api_client.fetch_openfda_drug_label(drug_name))
+
+@app.get("/api/gov/mfds-drug")
+def get_gov_mfds_drug(name: str = "아세트아미노펜"):
+    from engine.gov_api_client import gov_api_client
+    return JSONResponse(content=gov_api_client.fetch_mfds_drug_approval(name))
+
+@app.get("/api/gov/pubchem-compound")
+def get_gov_pubchem_compound(name: str = "phenoxyethanol"):
+    from engine.gov_api_client import gov_api_client
+    return JSONResponse(content=gov_api_client.fetch_pubchem_compound_data(name))
+
 def local_regulatory_search_engine(query: str, target_region: str = "ALL", domain: str = "Pharmaceuticals", lang: str = "en") -> Dict[str, Any]:
     q_lower = query.lower().strip()
     matched_ingredients = []

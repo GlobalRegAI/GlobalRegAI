@@ -88,6 +88,15 @@ def apply_mfds_korean_term_filter(text: str) -> str:
         cleaned = pattern.sub(v, cleaned)
     return cleaned
 
+
+@app.get("/robots.txt", response_class=PlainTextResponse)
+def get_robots_txt():
+    return "User-agent: *\nAllow: /\nSitemap: https://globalregai.info/sitemap.xml\n"
+
+@app.get("/sitemap.xml")
+def get_sitemap_xml():
+    return Response(content='<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url><loc>https://globalregai.info/</loc></url></urlset>', media_type="application/xml")
+
 @app.get("/ads.txt", response_class=PlainTextResponse)
 def get_ads_txt():
     return "google.com, pub-9335333067725848, DIRECT, f08c47fec0942fa0\n"
@@ -337,9 +346,13 @@ def fetch_batch(batch_id: str = "BATCH-2024-001"):
     res = get_batch_record(batch_id)
     return JSONResponse(content=json.loads(res))
 
-ADSENSE_SCRIPT = '<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9335333067725848" crossorigin="anonymous"></script>'
+ADSENSE_SCRIPT = ""  # No ad requests on interactive, loading, login or generated-answer screens.
+
+MOBILE_LAYOUT = "<style>@media(max-width:700px){body{display:block!important;height:auto!important;overflow:auto!important}.sidebar{width:100%!important;max-height:210px;overflow:auto}.main-wrapper{height:auto!important;overflow:visible!important;min-width:0}.top-header{height:auto!important;flex-wrap:wrap;padding:12px!important;gap:12px}.header-right{flex-wrap:wrap;gap:6px;max-width:100%}.sub-tabs-bar{flex-wrap:wrap;height:auto!important}.page-content-area{padding:16px!important;padding-bottom:100px!important}.fixed-chat-bar{left:0!important;padding:10px!important}.chat-input{min-width:0}.country-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.chat-bubble-assistant,.chat-bubble-user{max-width:100%!important}.glass-card{overflow-wrap:anywhere}}</style>"
 
 COMMON_PAGE_HEAD = f"""
+  {MOBILE_LAYOUT}
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   {ADSENSE_SCRIPT}
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Cormorant+Garamond:wght@600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">

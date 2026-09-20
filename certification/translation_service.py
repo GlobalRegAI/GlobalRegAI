@@ -91,6 +91,9 @@ async def translate(text, source, target):
         translated = item['text']
         if not isinstance(translated, str) or not translated.strip():
             raise ValueError('Empty translation')
+        detected = str(item.get('detected_source_language', source)).lower().split('-')[0]
+        if translated.strip() == text.strip() and detected != target:
+            raise TranslationError('The provider returned unchanged text for a different target language. Translation could not be confirmed.', 502)
         return {'status': 'SUCCESS', 'engine': 'DeepL', 'source_lang': item.get('detected_source_language', source),
                 'target_lang': target, 'translated_text': translated,
                 'message': 'Machine translation — review terminology, numbers and meaning before use. Not a certified translation.'}

@@ -51,6 +51,11 @@ SOURCES = [
          url='https://www.fda.gov/food/guidance-regulation-food-and-dietary-supplements/food-safety-modernization-act-fsma'),
 ]
 
+SOURCES.append(dict(id='fda-qmsr', title='FDA — Quality Management System Regulation (QMSR)', region='FDA',
+    domains=['Medical Devices', 'Standards & QMS', 'Certification'],
+    keywords=['qmsr', 'qsit', '13485', 'quality management', '품질경영'],
+    url='https://www.fda.gov/medical-devices/postmarket-requirements-devices/quality-management-system-regulation-qmsr'))
+
 
 def now():
     return dt.datetime.now(dt.timezone.utc).isoformat()
@@ -58,7 +63,13 @@ def now():
 
 def select_sources(query, domain, region):
     candidates = [s for s in SOURCES if domain in s['domains'] and (region == 'ALL' or s['region'] == region)]
-    return sorted(candidates, key=lambda s: sum(k in query.lower() for k in s['keywords']), reverse=True)[:3]
+    # Empty queries are used only to list planning links. Research must have a topic match.
+    if not query.strip():
+        return candidates[:3]
+    def score(source):
+        return sum(bool(re.search(r'(?<![a-z0-9])'+re.escape(k)+r'(?![a-z0-9])', query.lower()))
+                   if k.isascii() else k in query.lower() for k in source['keywords'])
+    return sorted((s for s in candidates if score(s)), key=score, reverse=True)[:3]
 
 
 async def fetch_source(client, source):
@@ -147,7 +158,7 @@ def checked_claims(raw, sources):
     if not isinstance(data, dict):
         raise ValueError('Invalid response shape')
     claims = data.get('claims', [])
-    if not isinstance(claims, list) or not 1 <= len(claims) <= 8:
+    if not isinstance(claims, list) or len(claims) > 8:
         raise ValueError('No supported claims')
     texts = {s['id']: s['text'] for s in sources}
     result = []
@@ -162,6 +173,10 @@ def checked_claims(raw, sources):
             raise ValueError('Unsupported citation')
         if not statement.strip() or len(statement) > 2000 or re.search(r'https?://', statement):
             raise ValueError('Invalid statement')
+        # This research catalogue is not a product approval or certification registry.
+        # Reject obvious product verdicts even when an unrelated quotation matches.
+        if re.search(r'\b(?:this|your|the)\s+product\s+(?:is|has been)\s+(?:approved|certified|compliant)\b', statement, re.I):
+            raise ValueError('Product verdict requires a verified product record')
         result.append(dict(statement=statement, source_id=sid, quote=quote))
     return result
 
@@ -210,6 +225,10 @@ async def search(query, domain, region, lang):
                         'sources': [{'id': s['id'], 'text': source_context(s, query)} for s in evidence]}, ensure_ascii=False)}]}, timeout=18), timeout=20)
             response.raise_for_status()
             claims = checked_claims(response.json()['choices'][0]['message']['content'], evidence)
+            if not claims:
+                result.update(status='INSUFFICIENT_EVIDENCE',
+                              message='Retrieved documents do not establish an answer to this question. No conclusion was generated.')
+                return result
             result.update(status='DRAFT', claims=claims, citation_match=True, interpretation_verified=False,
                           message='Unverified AI draft based on retrieved sources. Only quotation text was matched. Whether the quotations support each conclusion, their applicability, and effective dates require independent review.')
         except (httpx.HTTPError, asyncio.TimeoutError, ValueError, KeyError, IndexError, TypeError):

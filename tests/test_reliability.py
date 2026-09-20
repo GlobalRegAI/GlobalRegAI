@@ -320,8 +320,42 @@ def test_matching_quote_does_not_certify_interpretation(monkeypatch):
     monkeypatch.setenv('GROQ_API_KEY', 'test-only')
     async def retrieve(client, source): return evidence(source)
     monkeypatch.setattr(research, 'fetch_source', retrieve)
-    claim = {'statement': 'This product is approved.', 'source_id': 'fda-mocra', 'quote': evidence(research.SOURCES[1])['text']}
+    claim = {'statement': 'Scope needs independent interpretation.', 'source_id': 'fda-mocra', 'quote': evidence(research.SOURCES[1])['text']}
     mock_async_client(monkeypatch, lambda request: httpx.Response(200, json={'choices': [{'message': {'content': json.dumps({'claims': [claim]})}}]}))
     result = asyncio.run(research.search('MoCRA', 'Cosmetics', 'FDA', 'en'))
     assert result['status'] == 'DRAFT'
     assert result['citation_match'] is True and result['interpretation_verified'] is False and result['verified'] is False
+
+
+def test_irrelevant_topics_do_not_receive_generic_sources():
+    assert research.select_sources('fictional medicine ZZZ-NONEXISTENT-9284 approval number', 'Pharmaceuticals', 'FDA') == []
+    assert research.select_sources('Explain the procedure', 'Certification', 'EMA') == []
+
+
+def test_qmsr_has_a_specific_current_official_source():
+    sources = research.select_sources('QMSR and QSIT as of September 2026', 'Medical Devices', 'FDA')
+    assert sources[0]['id'] == 'fda-qmsr'
+    assert all(s['region'] == 'FDA' for s in sources)
+
+
+def test_product_verdict_with_unrelated_exact_quote_is_rejected():
+    claim = {'statement': 'This product is approved.', 'source_id': 'fda-mocra', 'quote': evidence(research.SOURCES[1])['text']}
+    with pytest.raises(ValueError, match='Product verdict'):
+        research.checked_claims(json.dumps({'claims': [claim]}), [evidence(research.SOURCES[1])])
+
+
+def test_model_abstention_is_not_misreported_as_provider_failure(monkeypatch):
+    monkeypatch.setenv('GROQ_API_KEY', 'test-only')
+    async def retrieve(client, source): return evidence(source)
+    monkeypatch.setattr(research, 'fetch_source', retrieve)
+    mock_async_client(monkeypatch, lambda r: httpx.Response(200, json={'choices': [{'message': {'content': '{"claims": []}'}}]}))
+    result = asyncio.run(research.search('MoCRA', 'Cosmetics', 'FDA', 'en'))
+    assert result['status'] == 'INSUFFICIENT_EVIDENCE' and result['claims'] == []
+
+
+def test_unchanged_foreign_language_translation_is_not_success(monkeypatch):
+    monkeypatch.setenv('DEEPL_API_KEY', 'test-only')
+    text = 'The sample contains 25 mg.'
+    mock_async_client(monkeypatch, lambda r: httpx.Response(200, json={'translations': [{'text': text, 'detected_source_language': 'EN'}]}))
+    with pytest.raises(translation.TranslationError, match='unchanged text'):
+        asyncio.run(translation.translate(text, 'en', 'de'))

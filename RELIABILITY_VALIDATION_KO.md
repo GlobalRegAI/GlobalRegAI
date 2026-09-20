@@ -1,0 +1,53 @@
+# GlobalRegAI 신뢰성 수정 검증 보고서
+
+검증일: 2026-09-20. **운영 배포 승인 전이며, 실제 AI·번역 품질은 미검증입니다.**
+
+## 적용 범위
+- 패키지 SHA-256: `36f2d1f782f863efc254d174f1fe23a60828f790d9eed26c139db24b7425c284`.
+- 패키지 기준: `90acc751f633e3586d972b3c30c2ceacac5f2bd9`.
+- 작업 시작점: `3675a249d5eefe74c70569a8b99b2b7e00b830f3` (기존 광고 제거·모바일·검색엔진 경로 수정 보존).
+- 브랜치: `codex/reliability-20260920`. 저장소에 추적된 AGENTS.md 없음.
+- 기존 Vercel Python 진입점 `app.py`와 공개 도구 경로 유지. React/Vite·로컬 MCP 앱은 배포 대상이 아님.
+
+## 변경 및 검토 판단
+- 분야 URL의 & 인코딩, 질문 제출·오류·중복 제출, 관할·언어 전달 수정.
+- 공식 문서 조회 실패 시 생성 답변을 표시하지 않음. 인용문 문자열 일치와 해석 검증을 별도 표시. AI 초안은 정확성·규제 적합성 보증이 아님.
+- 허위 허가 기록·임의 적합성 점수·샘플 기밀문서 반환 제거. 실제 openFDA·PubChem 조회는 유지하며 잘못된 응답 구조도 UNAVAILABLE로 처리.
+- GMP·수출 양식의 관할을 상단 선택과 동기화. 전체 관할 상태에서 임의로 FDA를 선택하지 않음.
+- 기본 관리자 암호·고정 세션 제거, 서명·만료·암호 변경 시 세션 무효화, 실제 응답에 쿠키 설정/삭제, 관리자·보관함 API 보호.
+- 모바일에서도 관리자 탐색 링크 제공. 광고 제거와 robots.txt·sitemap.xml 보존.
+- DeepL 공식 API의 입력·인증 방식을 공식 문서와 대조. 비공식 Google GTX/MyMemory 실패 후 임의 대체 번역하는 경로는 유지하지 않음.
+- **DeepL 전환은 새 키가 필요하므로 운영상 변경점임.** 잘못된 DEEPL_API_PLAN은 Pro로 자동 전환하지 않고 요청 전 실패. 번역 키가 없으면 서비스 미설정을 명시하며 실제 번역 검증 전 운영 배포를 승인하지 않음.
+- DOCX 본문/표, 텍스트 기반 PDF, UTF-8 TXT/MD 지원. OCR·원본 배치 보존·DOCX 머리말/꼬리말은 미지원이며 화면에서 고지.
+
+## 검증 결과
+- Python 3.12: `python -m pytest -q` **51개 통과**. 모의 제공자 성공/실패·인용·문서·인증·오류·기존 경로 회귀 포함.
+- Node 24.14 / jsdom 29.1.1: `python scripts/check_workspace_dom.py` **8개 통과**. CI도 동일 jsdom 버전으로 설정.
+- `node --check static/workspace.js`, `git diff --check` 통과.
+- 실제 외부 문서: FDA 공정검증, MoCRA, 의료기기 개요, 데이터 무결성, 식품 FSMA, EU GMP, EU 의료기기, MHRA 의료기기 **8/8 조회 성공**. 문서 조회 성공은 답변 정확성을 증명하지 않음.
+- 실제 브라우저: 1440×1000 데스크톱, 390×844 모바일 확인. 분야 링크·언어·관할 유지, 근거 부족 응답, 한국어 GMP 검토 목록, 번역 미설정 상태 확인. 모바일 전체 문서 가로 넘침 없음(클라이언트/스크롤 너비 모두 375px, 스크롤바 제외).
+- 관리자 쿠키·로그인/로그아웃은 TestClient에서 검증. 실제 운영 관리자 로그인은 미검증.
+- 실제 Groq 응답 품질, 실제 DeepL 번역·문서 전송, 기존 Vercel 미리보기·운영 배포, 배포 후 확인은 미완료.
+- 테스트 경고 1건: Starlette 테스트 클라이언트의 AnyIO 별칭 폐기 예정 경고. 테스트 실패 없음.
+
+## 접근 및 설정
+로컬 환경변수와 저장소의 환경 파일에는 서비스 비밀값이 없음. 운영 환경변수는 Vercel 접근 미확보로 확인하지 못했으며 누락으로 단정하지 않음. 연결된 Vercel 팀에는 betterskin만 노출되고, 프로젝트 상세 도구는 projectId/idOrName 스키마 불일치 오류. 브라우저 대시보드는 로그인이 필요함.
+
+기존 `global-reg-ai` 프로젝트의 **Settings → Environment Variables**에서 Preview와 Production 범위를 확인:
+- `GROQ_API_KEY`, 선택값 `GROQ_MODEL`
+- `DEEPL_API_KEY`, `DEEPL_API_PLAN` (`free` 또는 `pro`)
+- `GLOBALREGAI_ADMIN_USER`
+- `GLOBALREGAI_ADMIN_PASSWORD_HASH`
+- `GLOBALREGAI_SESSION_SECRET` (32자 이상)
+
+관리자 값은 `python scripts/configure_admin.py`를 사용자 로컬에서 실행해 생성. 비밀값은 채팅·Git에 넣지 않음. 유료 가입·결제·새 Vercel 프로젝트 생성·DNS 변경 없음.
+
+## 남은 배포 관문
+1. 기존 Vercel 프로젝트 접근 복구 및 환경변수 존재 확인.
+2. 해당 프로젝트 Preview에 PR 커밋 배포 후 비민감한 질문/문서로 실제 제공자 성공·실패 및 결과 검토.
+3. 관할 충돌·답변 불가 질문과 MoCRA/QMSR/GMP 대표 질문을 전문가 검토. 인용 일치만으로 통과 판정하지 않음.
+4. Preview 통과 후 기존 프로젝트·도메인에 배포하고 커밋·배포 URL·롤백 대상 기록 및 운영 재검증.
+
+국가/제품별 공식 출처 범위는 제한적이며 한국·일본·중국·화학은 아직 충분한 근거가 없음. 분산 사용량 제한, 기밀 저장소·테넌트 계정·외부 포털 자동 제출은 연결되지 않음. 언어 선택은 AI 답변 언어이며 전체 UI 번역이 아님. GMP 고정 검토 문구는 한국어·영어 지원.
+
+DeepL 공식 참조: https://developers.deepl.com/api-reference/translate/request-translation

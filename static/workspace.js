@@ -110,6 +110,9 @@ bindForm('question-form', 'research-results', async target => {
   const data = await post('/api/search', {query:question,domain,target_region:selectedRegion,lang:$('answer-language').value});
   const card = node('article', undefined, 'card answer-card');
   card.append(node('span', data.status.replaceAll('_',' '), 'status-label'), node('h2',question), node('p', data.message, 'notice'));
+  if (data.provider_status && data.provider_status !== 'RESPONDED') {
+    card.append(node('p', 'AI service status: '+data.provider_status, 'source-meta'));
+  }
   for (const claim of data.claims || []) {
     const block = node('div', undefined, 'claim');
     block.append(node('p', claim.statement, 'answer-text'), node('blockquote', claim.quote));

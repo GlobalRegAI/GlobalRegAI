@@ -11,6 +11,7 @@ from urllib.parse import urlparse
 import httpx
 from bs4 import BeautifulSoup
 from pypdf import PdfReader
+from engine.ai_config import groq_key
 
 DOMAINS = ('Pharmaceuticals', 'Medical Devices', 'Cosmetics', 'Food Safety', 'Chemicals',
            'Animal & Veterinary', 'Standards & QMS', 'Certification')
@@ -200,7 +201,7 @@ async def search(query, domain, region, lang):
         if not evidence:
             result.update(status='SOURCE_UNAVAILABLE', message='Official sources could not be retrieved. Links are provided for manual review; no answer was generated.')
             return result
-        key = os.getenv('GROQ_API_KEY', '')
+        key = groq_key()
         result.update(status='SOURCES_ONLY', message='Official-source excerpts are available. AI synthesis is not configured; review the linked documents.')
         if not key:
             return result
@@ -223,14 +224,17 @@ async def search(query, domain, region, lang):
                     'messages': [{'role': 'system', 'content': system}, {'role': 'user', 'content': json.dumps({
                         'question': query, 'domain': domain, 'jurisdiction': region,
                         'sources': [{'id': s['id'], 'text': source_context(s, query)} for s in evidence]}, ensure_ascii=False)}]}, timeout=18), timeout=20)
-            response.raise_for_status()
+            if response.status_code != 200:
+                reason = {401: 'AUTHENTICATION_FAILED', 403: 'ACCESS_DENIED', 429: 'RATE_LIMITED'}.get(response.status_code, 'PROVIDER_ERROR')
+                result.update(provider_status=reason, message='AI synthesis is unavailable. The official-source excerpts remain available; no generated answer is shown.')
+                return result
             claims = checked_claims(response.json()['choices'][0]['message']['content'], evidence)
             if not claims:
-                result.update(status='INSUFFICIENT_EVIDENCE',
+                result.update(status='INSUFFICIENT_EVIDENCE', provider_status='RESPONDED',
                               message='Retrieved documents do not establish an answer to this question. No conclusion was generated.')
                 return result
-            result.update(status='DRAFT', claims=claims, citation_match=True, interpretation_verified=False,
+            result.update(status='DRAFT', provider_status='RESPONDED', claims=claims, citation_match=True, interpretation_verified=False,
                           message='Unverified AI draft based on retrieved sources. Only quotation text was matched. Whether the quotations support each conclusion, their applicability, and effective dates require independent review.')
         except (httpx.HTTPError, asyncio.TimeoutError, ValueError, KeyError, IndexError, TypeError):
-            result.update(message='AI synthesis was unavailable or did not pass citation checks. Review the official-source excerpts; no unsupported answer is shown.')
+            result.update(provider_status='UNAVAILABLE_OR_INVALID_RESPONSE', message='AI synthesis was unavailable or did not pass citation checks. Review the official-source excerpts; no unsupported answer is shown.')
         return result

@@ -20,6 +20,8 @@ from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel, Field, field_validator
 
 from engine import regulatory_search
+from engine import ai_config
+from engine import question_router
 from engine.audit_engine import audit_engine, PRODUCT_CATEGORIES
 from certification.translation_service import extract_text, translate, TranslationError, MAX_FILE_BYTES
 
@@ -165,7 +167,7 @@ async def translation_failure(request, exc):
 @app.get('/api/health')
 def health():
     return {'status': 'OK', 'version': app.version, 'capabilities': {
-        'answer_synthesis': 'CONFIGURED_NOT_PROBED' if os.getenv('GROQ_API_KEY') else 'NOT_CONFIGURED',
+        'answer_synthesis': 'CONFIGURED_NOT_PROBED' if ai_config.configured() else 'NOT_CONFIGURED',
         'translation': 'CONFIGURED_NOT_PROBED' if os.getenv('DEEPL_API_KEY') else 'NOT_CONFIGURED',
         'official_source_count': len(regulatory_search.SOURCES), 'vault': 'NOT_CONNECTED',
         'browser_agent': 'NOT_CONNECTED'}}
@@ -174,7 +176,7 @@ def health():
 @app.post('/api/search')
 async def search_api(payload: SearchPayload, request: Request):
     throttle(request, 'search', 30)
-    return await regulatory_search.search(payload.query, payload.domain, payload.target_region, payload.lang)
+    return await question_router.answer(payload.query, payload.domain, payload.target_region, payload.lang)
 
 
 @app.get('/api/search')
@@ -272,7 +274,7 @@ def logout():
 @app.get('/api/mcp/status')
 def mcp_status(request: Request):
     require_admin(request)
-    return {**health(), 'mcp_status': 'NOT_CONNECTED', 'rate_limit_scope': 'per_worker',
+    return {**health(), 'ai_configuration': ai_config.configuration_status(), 'mcp_status': 'NOT_CONNECTED', 'rate_limit_scope': 'per_worker',
             'notice': 'Configuration presence does not establish upstream availability. No tenant document store or autonomous browser service is connected.'}
 
 
@@ -317,7 +319,7 @@ def page(request: Request, domain: str = 'Pharmaceuticals', lang: str = 'en'):
         'languages': regulatory_search.LANGUAGES, 'pages': PAGES,
         'page_url': lambda path, d=domain: path+'?'+urlencode({'domain': d, 'lang': lang}),
         'authenticated': authenticated(request), 'admin_configured': admin_configured(),
-        'ai_configured': bool(os.getenv('GROQ_API_KEY')), 'translation_configured': bool(os.getenv('DEEPL_API_KEY')),
+        'ai_configured': ai_config.configured(), 'translation_configured': bool(os.getenv('DEEPL_API_KEY')),
         'sources': regulatory_search.SOURCES})
 
 

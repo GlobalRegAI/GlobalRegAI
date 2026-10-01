@@ -123,5 +123,24 @@ async function run(name, callback) { await callback(); passed++; console.log('PA
     assert.match(dom.window.document.getElementById('export-results').textContent, /Choose a target market/);
     dom.window.close();
   });
+  await run('Clarification retains question and submits selected jurisdiction', async () => {
+    const bodies = [];
+    const dom = await environment('/', async (_, options) => {
+      bodies.push(JSON.parse(options.body));
+      return response(bodies.length === 1
+        ? {status:'CLARIFICATION_REQUIRED', message:'Choose jurisdiction', choices:[{label:'South Korea',target_region:'MFDS'}]}
+        : {status:'DOCUMENT_LINKS', message:'Official forms', sources:[]});
+    });
+    const doc = dom.window.document;
+    doc.getElementById('question').value = '허가 서류가 필요합니다';
+    submit(dom, 'question-form'); await complete(dom, 'research-results');
+    doc.querySelector('#research-results button').click();
+    await complete(dom, 'research-results');
+    assert.equal(bodies.length, 2);
+    assert.equal(bodies[1].query, bodies[0].query);
+    assert.equal(bodies[1].target_region, 'MFDS');
+    assert.match(doc.getElementById('research-results').textContent, /Official forms/);
+    dom.window.close();
+  });
   console.log(`${passed} DOM integration checks passed. Visual layout and live provider quality were not tested by this suite.`);
 })().catch(error => { console.error(error); process.exitCode = 1; });

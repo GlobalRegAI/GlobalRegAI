@@ -20,6 +20,9 @@ from engine.gov_api_client import GlobalGovAPIClient
 
 @pytest.fixture(autouse=True)
 def isolated(monkeypatch):
+    from engine.ai_config import KEY_NAMES
+    for name in KEY_NAMES:
+        monkeypatch.delenv(name, raising=False)
     for name in ('GROQ_API_KEY','DEEPL_API_KEY','GLOBALREGAI_ADMIN_USER','GLOBALREGAI_ADMIN_PASSWORD_HASH','GLOBALREGAI_SESSION_SECRET'):
         monkeypatch.delenv(name, raising=False)
     web.LIMITS.clear()
@@ -62,7 +65,7 @@ def test_search_preserves_region_and_language(client, monkeypatch):
         return {'domain':domain,'target_region':region,'lang':lang}
     monkeypatch.setattr(research,'search',fake)
     data = client.post('/api/search',json={'query':'화장품 등록','domain':'Cosmetics','target_region':'MFDS','lang':'ko'}).json()
-    assert data == {'domain':'Cosmetics','target_region':'MFDS','lang':'ko'}
+    assert data == {'domain':'Cosmetics','target_region':'MFDS','lang':'ko','route':'GROUNDED_RESEARCH'}
 
 
 def test_no_evidence_never_returns_a_regulatory_answer():
@@ -359,3 +362,38 @@ def test_unchanged_foreign_language_translation_is_not_success(monkeypatch):
     mock_async_client(monkeypatch, lambda r: httpx.Response(200, json={'translations': [{'text': text, 'detected_source_language': 'EN'}]}))
     with pytest.raises(translation.TranslationError, match='unchanged text'):
         asyncio.run(translation.translate(text, 'en', 'de'))
+
+
+@pytest.mark.parametrize('name', ['VITE_GROQ_API_KEY', 'VITE_GROQ_API_KEY_1', 'VITE_GROQ_API_KEY_2', 'VITE_GROQ_API_KEY_3'])
+def test_legacy_server_key_drives_real_provider_request_without_exposure(client, monkeypatch, name):
+    monkeypatch.setenv(name, 'legacy-test-secret')
+    async def retrieve(client, source): return evidence(source)
+    monkeypatch.setattr(research, 'fetch_source', retrieve)
+    def handler(request):
+        assert request.headers['Authorization'] == 'Bearer legacy-test-secret'
+        return httpx.Response(200, json={'choices': [{'message': {'content': '{"claims": []}'}}]})
+    mock_async_client(monkeypatch, handler)
+    result = asyncio.run(research.search('MoCRA', 'Cosmetics', 'FDA', 'en'))
+    assert result['provider_status'] == 'RESPONDED'
+    assert client.get('/api/health').json()['capabilities']['answer_synthesis'] == 'CONFIGURED_NOT_PROBED'
+    assert 'legacy-test-secret' not in client.get('/').text
+    assert 'legacy-test-secret' not in json.dumps(result)
+
+
+def test_primary_key_precedes_legacy_and_no_quota_rotation(monkeypatch):
+    from engine.ai_config import groq_key, configuration_status
+    monkeypatch.setenv('GROQ_API_KEY', 'primary-test')
+    monkeypatch.setenv('VITE_GROQ_API_KEY_1', 'legacy-test')
+    assert groq_key() == 'primary-test'
+    assert configuration_status() == {'configured': True, 'legacy_variable_in_use': False}
+
+
+@pytest.mark.parametrize('code,reason', [(401, 'AUTHENTICATION_FAILED'), (403, 'ACCESS_DENIED'), (429, 'RATE_LIMITED'), (503, 'PROVIDER_ERROR')])
+def test_ai_provider_failure_is_distinguishable_without_body_or_key_leak(monkeypatch, code, reason):
+    monkeypatch.setenv('GROQ_API_KEY', 'private-test')
+    async def retrieve(client, source): return evidence(source)
+    monkeypatch.setattr(research, 'fetch_source', retrieve)
+    mock_async_client(monkeypatch, lambda r: httpx.Response(code, json={'error': 'private-provider-details'}))
+    result = asyncio.run(research.search('MoCRA', 'Cosmetics', 'FDA', 'en'))
+    assert result['provider_status'] == reason and result['claims'] == []
+    assert 'private-' not in json.dumps(result)

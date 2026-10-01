@@ -12,6 +12,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import httpx
 from engine import regulatory_search as research
+from engine.ai_config import configured
 from certification.translation_service import translate, TranslationError
 
 
@@ -19,7 +20,7 @@ async def main():
     async with httpx.AsyncClient(timeout=8, follow_redirects=False) as client:
         sources = await asyncio.gather(*(research.fetch_source(client, source) for source in research.SOURCES))
     report = {'sources': [{key: source.get(key) for key in ('id', 'retrieval_status', 'content_sha256')} for source in sources]}
-    if os.getenv('GROQ_API_KEY'):
+    if configured():
         result = await research.search('Which MoCRA facility registration exemptions should a cosmetic manufacturer check?', 'Cosmetics', 'FDA', 'en')
         report['ai'] = {'status': result['status'], 'claim_count': len(result['claims']), 'quality_review': 'NOT_PERFORMED'}
     else:

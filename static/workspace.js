@@ -79,7 +79,8 @@ function renderSources(target, sources) {
   for (const source of sources) {
     const card = node('div', undefined, 'source-card');
     card.append(sourceLink(source));
-    if (source.retrieval_status) card.append(node('p', source.retrieval_status === 'RETRIEVED' ? 'Retrieved for this request' : 'Not retrieved — open the official page to review', 'source-meta'));
+    if (source.retrieval_status) card.append(node('p', source.retrieval_status === 'RETRIEVED' ? 'Retrieved for this request' : 'Official navigation link — open the page to check current information', 'source-meta'));
+    if (source.catalogue_reviewed_at) card.append(node('p', 'Directory reviewed: '+source.catalogue_reviewed_at, 'source-meta'));
     if (source.excerpt) card.append(node('blockquote', source.excerpt));
     if (source.retrieved_at) card.append(node('p', 'Retrieved: '+new Date(source.retrieved_at).toLocaleString(), 'source-meta'));
     card.append(node('p', 'Effective date: not independently verified', 'source-meta'));
@@ -117,6 +118,17 @@ bindForm('question-form', 'research-results', async target => {
     card.append(block);
   }
   renderSources(card, data.sources || []);
+  for (const choice of data.choices || []) {
+    const button = node('button', choice.label);
+    button.type = 'button';
+    button.addEventListener('click', () => {
+      region.value = choice.target_region;
+      retainContext(); syncToolRegions();
+      $('question').value = question;
+      $('question-form').requestSubmit();
+    });
+    card.append(button);
+  }
   target.replaceChildren(card);
 });
 bindForm('audit-form','audit-results', async target => {

@@ -219,7 +219,7 @@ async def search(query, domain, region, lang):
         try:
             response = await asyncio.wait_for(client.post('https://api.groq.com/openai/v1/chat/completions',
                 headers={'Authorization': 'Bearer '+key}, json={
-                    'model': os.getenv('GROQ_MODEL', 'llama-3.3-70b-versatile'), 'temperature': 0,
+                    'model': os.getenv('GROQ_MODEL', 'openai/gpt-oss-120b'), 'temperature': 0,
                     'max_tokens': 2200, 'response_format': {'type': 'json_object'},
                     'messages': [{'role': 'system', 'content': system}, {'role': 'user', 'content': json.dumps({
                         'question': query, 'domain': domain, 'jurisdiction': region,

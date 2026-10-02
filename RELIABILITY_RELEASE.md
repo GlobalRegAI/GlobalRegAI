@@ -46,7 +46,7 @@ Validation completed locally: **45 Python regression checks and 6 DOM integratio
 | Variable | Purpose | Missing-value behaviour |
 |---|---|---|
 | `GROQ_API_KEY` | Existing server-side answer provider | Official sources only; no AI conclusion |
-| `GROQ_MODEL` | Optional model ID (default `llama-3.3-70b-versatile`) | Uses the default; unsupported models return sources only |
+| `GROQ_MODEL` | Optional model ID (default `openai/gpt-oss-120b`) | Uses the default; unsupported models return sources only |
 | `DEEPL_API_KEY` | Official translation API | Translation unavailable |
 | `DEEPL_API_PLAN` | `free` (default) or `pro` endpoint | Uses free endpoint |
 | `GLOBALREGAI_ADMIN_USER` | Administrator username | Administrator access disabled |

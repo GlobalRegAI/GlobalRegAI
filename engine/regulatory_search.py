@@ -213,6 +213,8 @@ async def search(query, domain, region, lang):
             'Answer statements in '+LANGUAGES[lang]+'. Quotes must remain verbatim. '
             'Do not fabricate dates, deadlines, approval status, audit scores, legal requirements, URLs or sources. '
             'Distinguish guidance from law. Do not assume a universal validation cycle or batch count. '
+            'Preserve every scope qualifier such as certain, some, may and exceptions in translated statements. '
+            'Never broaden an exemption to all small businesses; state that eligibility must be established. '
             'Do not treat retrieval time as an effective date. Identify product-specific limitations within statements. '
             'Do not claim completeness, certification or regulatory approval.'
         )

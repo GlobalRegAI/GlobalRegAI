@@ -168,6 +168,7 @@ async def translation_failure(request, exc):
 def health():
     return {'status': 'OK', 'version': app.version, 'capabilities': {
         'answer_synthesis': 'CONFIGURED_NOT_PROBED' if ai_config.configured() else 'NOT_CONFIGURED',
+        'service_mode': 'AI_ASSISTED' if ai_config.configured() else 'FREE_BASIC',
         'translation': 'CONFIGURED_NOT_PROBED' if os.getenv('DEEPL_API_KEY') else 'NOT_CONFIGURED',
         'official_source_count': len(regulatory_search.SOURCES), 'vault': 'NOT_CONNECTED',
         'browser_agent': 'NOT_CONNECTED'}}

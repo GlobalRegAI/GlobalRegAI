@@ -20,6 +20,7 @@ from engine.gov_api_client import GlobalGovAPIClient
 
 @pytest.fixture(autouse=True)
 def isolated(monkeypatch):
+    monkeypatch.setenv('GLOBALREGAI_AI_PROVIDER', 'groq')
     from engine.ai_config import KEY_NAMES
     for name in KEY_NAMES:
         monkeypatch.delenv(name, raising=False)

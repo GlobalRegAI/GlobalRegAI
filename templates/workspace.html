@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Regulatory research with official-source references, GMP evidence review and document translation.">
+  <title>{{ title }} · GlobalRegAI</title>
+  <link rel="stylesheet" href="/static/workspace.css">
+  <script src="/static/workspace.js" defer></script>
+</head>
+<body data-page="{{ active }}" data-domain="{{ domain }}" data-lang="{{ lang }}">
+<a class="skip-link" href="#main">Skip to workspace</a>
+<aside class="sidebar">
+  <a class="brand" href="/" aria-label="GlobalRegAI home"><span class="brand-mark">G</span><span>GlobalRegAI<small>Regulatory workspace</small></span></a>
+  <nav aria-label="Regulatory domains">
+    <p class="eyebrow">Domains</p>
+    {% for item in domains %}<a href="{{ page_url('/', item) }}" class="domain-link{% if item == domain %} selected{% endif %}" {% if item == domain %}aria-current="true"{% endif %}>{{ item }}</a>{% endfor %}
+  </nav>
+  <div class="sidebar-note"><strong>Evidence before conclusions</strong><p>Check scope, jurisdiction and effective dates before applying an answer.</p><a href="{{ page_url('/developer-console') }}">Administrator</a></div>
+</aside>
+<div class="workspace">
+  <header class="topbar"><div><p class="eyebrow">{{ domain }}</p><strong>{{ title }}</strong></div><div class="context-controls"><label for="region">Jurisdiction<select id="region">{% for value, label in regions.items() %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select></label><label for="answer-language">Answer language<select id="answer-language">{% for value, label in languages.items() %}<option value="{{ value }}" {% if value == lang %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></label></div></header>
+  <nav class="tabs" aria-label="Tools">{% for path, info in pages.items() %}<a href="{{ page_url(path) }}" {% if info[0] == active %}aria-current="page"{% endif %}>{{ info[1] }}</a>{% endfor %}</nav>
+  <main id="main">
+  {% if active == 'qa' %}
+  <div class="research-layout">
+    <section class="primary-column">
+      <div class="section-heading"><span class="eyebrow">Research · Documents · Agency contacts</span><h1>What do you need to establish?</h1><p>Find official forms, ask an evidence-based question or locate an agency contact. Include the product, intended use and target market. Jurisdiction choices retain your question; separate questions are assessed independently.</p></div>
+      <form id="question-form" class="card composer">
+        <label for="question">Your regulatory question</label>
+        <textarea id="question" name="query" required minlength="3" maxlength="4000" rows="4" placeholder="For example: Which MoCRA requirements apply to a cosmetic manufacturer exporting to the United States?"></textarea>
+        <div class="form-footer"><p class="muted">{% if ai_configured %}Questions and retrieved sources are sent to Groq for a draft answer. Use non-confidential information.{% else %}Source research is available. AI answers need a configured provider.{% endif %}</p><button type="submit">Research question <span aria-hidden="true">↗</span></button></div>
+      </form>
+      <div id="research-results" aria-live="polite" aria-busy="false" tabindex="-1"><div class="empty-state"><strong>Your evidence trail starts here</strong><p>Results separate draft claims, supporting quotations and unresolved questions. A missing source never becomes a fabricated answer.</p></div></div>
+    </section>
+    <aside class="evidence-panel"><p class="eyebrow">Coverage</p><h2>Know the boundaries</h2><p>The initial catalogue covers selected FDA drug, cosmetics, food and device sources, EU GMP and devices, and UK medical devices. Other markets remain available as selections and will report missing coverage.</p><h3>What you will see</h3><ul><li>A link to each official source</li><li>Retrieval time and source availability</li><li>Supporting quotations for draft claims</li><li>Effective dates marked unverified until checked</li></ul><div class="notice">Source matching checks quotations. It does not certify legal interpretation or product compliance.</div></aside>
+  </div>
+  {% elif active == 'gmp' %}
+    <div class="section-heading"><span class="eyebrow">GMP evidence review</span><h1>Identify what needs review</h1><p>Build a review list from reported information. This tool cannot determine compliance from a few form fields.</p></div>
+    <div class="two-columns"><form id="audit-form" class="card stack">
+      <label for="product">Product name</label><input id="product" required maxlength="200" placeholder="Enter product and dosage form">
+      <label for="audit-region">Target jurisdiction</label><select id="audit-region">{% for value, label in regions.items() %}{% if value != 'ALL' %}<option value="{{ value }}">{{ label }}</option>{% endif %}{% endfor %}</select>
+      <label for="hbel">Toxicological cleaning assessment available?</label><select id="hbel"><option value="">Not established</option><option value="true">Reported available — needs document review</option><option value="false">Reported unavailable</option></select>
+      <label for="pv-age">Years since process validation (if known)</label><input id="pv-age" type="number" min="0" max="100" placeholder="Unknown">
+      <label for="hvac">Environmental controls</label><select id="hvac"><option value="UNKNOWN">Not assessed</option><option value="COMPLIANT">Reported satisfactory — evidence not reviewed</option><option value="DEVIATION">Known deviation</option></select>
+      <button type="submit">Create review list</button>
+    </form><section id="audit-results" class="card result" aria-live="polite"><h2>No assessment yet</h2><p>No compliance percentage, verified ALCOA+ result or audit-ready status can be inferred without evidence.</p></section></div>
+  {% elif active == 'export' %}
+    <div class="section-heading"><span class="eyebrow">Export planning</span><h1>Define the market-access questions</h1><p>Choose a product category and jurisdiction to prepare a review outline.</p></div>
+    <div class="two-columns"><form id="export-form" class="card stack"><label for="category">Product category</label><select id="category"><option value="PHARMA">Pharmaceutical</option><option value="COSMETIC">Cosmetic</option><option value="DEVICE">Medical device</option><option value="SANITIZER">Sanitiser</option><option value="FOOD">Food</option><option value="CHEMICAL">Chemical</option></select><label for="export-region">Target market</label><select id="export-region">{% for value, label in regions.items() %}{% if value != 'ALL' %}<option value="{{ value }}">{{ label }}</option>{% endif %}{% endfor %}</select><button type="submit">Prepare planning questions</button><p class="notice">Ingredient limits require product type, concentration, use and current official evidence. The former unverified ingredient table is not used.</p></form><section id="export-results" class="card result" aria-live="polite"><h2>Your planning outline</h2><p>This is a starting point for investigation, not an export authorisation or complete requirements matrix.</p></section></div>
+  {% elif active == 'translation' %}
+    <div class="section-heading"><span class="eyebrow">Document translation</span><h1>Translate with a visible scope</h1><p>Machine translation for review. No certification or regulator endorsement is implied.</p></div>
+    {% if not translation_configured %}<div class="notice" role="status"><strong>Translation is not configured.</strong> The administrator must connect a DeepL API account before translation can run. No document is sent while the service is unconfigured.</div>{% endif %}
+    <div class="two-columns"><form id="translation-form" class="card stack"><label for="translation-text">Paste text</label><textarea id="translation-text" rows="8" maxlength="12000" placeholder="Paste non-confidential text (maximum 12,000 characters)"></textarea><label for="translation-file">Or upload a document</label><input id="translation-file" type="file" accept=".pdf,.docx,.txt,.md"><p class="muted">Maximum 2 MB and 12,000 extracted characters. Text-based PDF: all pages must contain extractable text. DOCX: body paragraphs and tables only; headers, footers, comments and images are excluded. Formatting is not retained. No OCR or legacy .doc support.</p><div class="field-pair"><label for="source-language">Source language<select id="source-language"><option value="auto">Detect automatically</option>{% for value,label in languages.items() %}<option value="{{ value }}">{{ label }}</option>{% endfor %}<option value="pt">Português</option></select></label><label for="target-language">Target language<select id="target-language">{% for value,label in languages.items() %}<option value="{{ value }}" {% if value == 'ko' %}selected{% endif %}>{{ label }}</option>{% endfor %}<option value="pt">Português</option></select></label></div><label class="checkbox"><input id="translation-consent" type="checkbox" required><span>I am authorised to send this text to DeepL. I have removed confidential and personal information.</span></label><button type="submit" {% if not translation_configured %}disabled{% endif %}>Translate for review</button></form><section id="translation-results" class="card result" aria-live="polite"><h2>Translation result</h2><p>Failed extraction or provider errors will be shown explicitly. Text will not be silently truncated or replaced with glossary fragments.</p></section></div>
+  {% elif active in ['vault', 'agent'] %}
+    <div class="card limited-panel"><span class="status-label">Not connected</span><h1>{{ title }}</h1>{% if active == 'vault' %}<p>A private document store with tenant isolation and access controls is not connected. No confidential document upload or search is available.</p><p>The previous sample SOPs and batch records are not real customer records and are no longer returned by the public application.</p>{% else %}<p>An authenticated browser-agent service is not connected. This page cannot operate external regulatory portals or submit applications.</p>{% endif %}<a class="button-link" href="{{ page_url('/') }}">Return to research</a></div>
+  {% elif active == 'admin' %}
+    <div class="section-heading"><span class="eyebrow">Administrator</span><h1>Service configuration</h1></div>
+    {% if authenticated %}<div class="card"><h2>Service status</h2><pre id="admin-status" aria-live="polite">Loading configuration status…</pre><button id="logout" type="button">Sign out</button></div>
+    {% elif not admin_configured %}<div class="card"><h2>Administrator access is disabled</h2><p>Configure a password hash and session-signing secret in the hosting environment. There are no default credentials.</p></div>
+    {% else %}<form id="login-form" class="card stack limited-panel"><label for="username">Username</label><input id="username" autocomplete="username" required maxlength="100"><label for="password">Password</label><input id="password" type="password" autocomplete="current-password" required maxlength="1024"><button type="submit">Sign in</button><p id="login-result" role="status"></p></form>{% endif %}
+  {% endif %}
+  <footer>GlobalRegAI · Research and review support. Final decisions require applicable official documents and qualified review.</footer>
+  </main>
+</div>
+</body>
+</html>

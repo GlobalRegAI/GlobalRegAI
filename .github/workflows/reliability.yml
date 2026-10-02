@@ -1,0 +1,25 @@
+name: Regulatory reliability checks
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: python -m pip install -r requirements.txt
+      - run: python -m pytest -q
+      - run: node --check static/workspace.js
+      - run: npm install --prefix "$RUNNER_TEMP/globalregai-dom" jsdom@29.1.1
+      - run: python scripts/check_workspace_dom.py
+        env:
+          DOM_DEPENDENCY_ROOT: ${{ runner.temp }}/globalregai-dom/node_modules

@@ -25,11 +25,11 @@
   {% if active == 'qa' %}
   <div class="research-layout">
     <section class="primary-column">
-      <div class="section-heading"><span class="eyebrow">Research · Documents · Agency contacts</span><h1>What do you need to establish?</h1><p>Find official forms, ask an evidence-based question or locate an agency contact. Include the product, intended use and target market. Jurisdiction choices retain your question; separate questions are assessed independently.</p></div>
+      <div class="section-heading"><span class="eyebrow">{% if not ai_configured %}{{ '무료 기본 서비스 · 공식 자료 검색' if lang == 'ko' else 'Free basic service · Official source search' }}{% else %}Research · Documents · Agency contacts{% endif %}</span><h1>{{ '어떤 공식 자료가 필요하신가요?' if lang == 'ko' else 'What do you need to establish?' }}</h1><p>{{ '서류와 담당 기관을 찾고 공식 원문을 검색합니다. 국가를 선택해도 기존 질문은 유지됩니다. 새로운 질문은 별도로 처리합니다.' if lang == 'ko' else 'Find official forms, search source text or locate an agency contact. Jurisdiction choices retain your question; separate questions are assessed independently.' }}</p></div>
       <form id="question-form" class="card composer">
         <label for="question">Your regulatory question</label>
         <textarea id="question" name="query" required minlength="3" maxlength="4000" rows="4" placeholder="For example: Which MoCRA requirements apply to a cosmetic manufacturer exporting to the United States?"></textarea>
-        <div class="form-footer"><p class="muted">{% if ai_configured %}Questions and retrieved sources are sent to Groq for a draft answer. Use non-confidential information.{% else %}Source research is available. AI answers need a configured provider.{% endif %}</p><button type="submit">Research question <span aria-hidden="true">↗</span></button></div>
+        <div class="form-footer"><p class="muted">{% if ai_configured %}Questions and retrieved sources are sent to Groq for a draft answer. Use non-confidential information.{% else %}{{ 'AI API 호출 없이 동작합니다. 원문은 원래 언어로 표시되며, 자동 답변·번역·허가 판정은 제공하지 않습니다.' if lang == 'ko' else 'No AI API calls. Excerpts remain in their original language. This mode does not generate answers, translate or determine approval.' }}{% endif %}</p><button type="submit">Research question <span aria-hidden="true">↗</span></button></div>
       </form>
       <div id="research-results" aria-live="polite" aria-busy="false" tabindex="-1"><div class="empty-state"><strong>Your evidence trail starts here</strong><p>Results separate draft claims, supporting quotations and unresolved questions. A missing source never becomes a fabricated answer.</p></div></div>
     </section>

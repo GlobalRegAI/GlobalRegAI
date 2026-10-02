@@ -14,7 +14,13 @@ def groq_key():
 
 
 def configured():
-    return bool(groq_key())
+    return provider() == 'groq' and bool(groq_key())
+
+
+def provider():
+    # Opt in explicitly. Stored credentials never silently enable billable inference.
+    value = os.getenv('GLOBALREGAI_AI_PROVIDER', 'none').strip().lower()
+    return value if value in {'none', 'groq'} else 'none'
 
 
 def configuration_status():

@@ -42,7 +42,14 @@ $('answer-language').addEventListener('change', () => { retainContext(); locatio
 retainContext();
 if ($('category')) {
   const categories = {'Pharmaceuticals':'PHARMA','Medical Devices':'DEVICE','Cosmetics':'COSMETIC','Food Safety':'FOOD','Chemicals':'CHEMICAL'};
-  $('category').value = categories[domain] || 'PHARMA';
+  $('category').value = [...$('category').options].some(item => item.value === queryParams.get('category')) ? queryParams.get('category') : (categories[domain] || 'PHARMA');
+  $('category').addEventListener('change', () => {
+    const url = new URL(location.href);
+    const selected = $('category').value;
+    url.searchParams.set('category', selected);
+    url.searchParams.set('domain', Object.keys(categories).find(key => categories[key] === selected) || 'Chemicals');
+    location.href = url.toString();
+  });
 }
 const node = (tag, text, className) => {
   const element = document.createElement(tag);
@@ -97,7 +104,7 @@ function renderSources(target, sources) {
     if (source.format === 'PDF' && /^fda-(356h|1571)(-instructions)?$/.test(source.id)) {
       const consentLabel = node('label', undefined, 'checkbox');
       const consent = node('input'); consent.type = 'checkbox';
-      consentLabel.append(consent, node('span', initialLang === 'ko' ? '공개 원문을 설정된 번역 제공자(DeepL 또는 Groq)로 전송하는 데 동의합니다.' : 'Send this public document to the configured translation provider (DeepL or Groq).'));
+      consentLabel.append(consent, node('span', initialLang === 'ko' ? '확인일 기준 공개 원문을 번역 제공자(DeepL 또는 Groq)로 전송하는 데 동의합니다.' : 'Send the reviewed public document snapshot to the translation provider (DeepL or Groq).'));
       const button = node('button', initialLang === 'ko' ? '이 서류를 한국어로 번역' : 'Translate this document'); button.type = 'button'; button.disabled = true;
       const result = node('div', undefined, 'answer-text'); result.setAttribute('aria-live','polite');
       consent.addEventListener('change', () => { button.disabled = !consent.checked; });

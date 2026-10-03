@@ -29,3 +29,20 @@ def device_eu(lang):
             'sources': [
                 {'id': 'eu-current', 'title': 'EU — '+('현행 규정·개정 안내' if ko else 'Regulations and amendments'), 'url': EU_OVERVIEW, 'catalogue_reviewed_at': '2026-10-03'},
                 {'id': 'eu-guide', 'title': 'EU — '+('제조업체 설명서 PDF (2020년판·전환기한 변경 주의)' if ko else 'Manufacturer factsheet PDF (2020; transitional dates superseded)'), 'url': EU_GUIDE, 'format': 'PDF', 'catalogue_reviewed_at': '2026-10-03'}]}
+
+
+def cosmetics_fda(lang):
+    ko = lang == 'ko'
+    return {'status':'PLANNING_ONLY','product_category':'COSMETIC','target_country':'FDA',
+            'message': 'MoCRA의 주요 준비 항목입니다. 소기업 면제는 조건부이며 제품별 적용 여부를 확인해야 합니다. 전체 수입·표시 요건을 모두 검토한 결과는 아닙니다.' if ko else 'Key MoCRA preparation items. Small-business exemptions are conditional. This is not a complete import or labelling assessment.',
+            'checklist': ([
+                '시설 등록 대상인 제조·가공업체는 FDA 등록과 2년 주기 갱신을 준비합니다. 책임자는 판매되는 제품의 성분 정보를 포함해 제품 목록을 제출하고 매년 갱신합니다. 먼저 해당 시설·제품의 면제 여부를 확인하세요.',
+                '특정 소기업은 GMP·시설 등록·제품 목록 의무에서 면제될 수 있습니다. 그러나 통상 사용 시 눈의 점막에 접촉하는 제품, 주입 제품, 체내 사용 제품, 또는 외관을 24시간 넘게 바꾸면서 통상 사용에 소비자의 제거가 포함되지 않는 제품은 이 소기업 면제를 적용할 수 없습니다.',
+                '제품 안전성을 뒷받침하는 과학적 근거와 기록을 준비·유지합니다. 특정 시험법이 일률적으로 요구되지 않는다는 것이 안전성 자료가 불필요하다는 뜻은 아닙니다.',
+                '책임자는 미국 내 사용과 관련된 중대한 이상사례를 15영업일 이내에 보고할 체계를 준비해야 합니다. 소기업 등록 면제를 모든 의무의 면제로 해석하지 마세요.'
+            ] if ko else [
+                'Where registration applies, manufacturers and processors register facilities and renew every two years. Responsible persons list marketed products, including ingredients, and update annually. Establish exemption eligibility first.',
+                'Certain small businesses qualify for GMP, registration and listing exemptions. These do not cover products contacting eye mucous membranes under usual use, injected or internally used products, or products altering appearance for more than 24 hours with no customary consumer removal.',
+                'Maintain scientifically robust safety substantiation records. Absence of a prescribed test does not remove the safety obligation.',
+                'Prepare serious adverse event reporting within 15 business days. Do not treat a registration exemption as exemption from all obligations.'
+            ]), 'sources':[{'id':'fda-mocra','title':'FDA — MoCRA','url':'https://www.fda.gov/cosmetics/cosmetics-laws-regulations/modernization-cosmetics-regulation-act-2022-mocra','catalogue_reviewed_at':'2026-10-03'}]}

@@ -56,3 +56,23 @@ def test_official_translation_rejects_arbitrary_urls_and_missing_consent():
     with TestClient(web.app) as client:
         assert client.post('/api/translate-official',json={'document_id':'fda-356h'}).status_code == 400
         assert client.post('/api/translate-official',json={'document_id':'https://localhost/private','consent':True}).status_code == 422
+
+
+def test_official_snapshot_translation_has_version_and_full_text(monkeypatch):
+    from unittest.mock import AsyncMock
+    web.LIMITS.clear()
+    monkeypatch.setattr(web,'translation_configured',lambda:True)
+    translate = AsyncMock(return_value={'status':'SUCCESS','translated_text':'번역 예시','message':'검토용'})
+    monkeypatch.setattr(web,'translate',translate)
+    with TestClient(web.app) as client:
+        result=client.post('/api/translate-official',json={'document_id':'fda-1571','target_lang':'ko','consent':True})
+        assert result.status_code==200
+        assert result.json()['source_reviewed_at']=='2026-10-03'
+        assert len(translate.call_args.args[0])>8000
+        assert client.post('/api/translate-official',json={'document_id':'fda-356h-instructions','consent':True}).status_code==413
+
+
+def test_cosmetic_guide_keeps_exemption_conditions():
+    from engine.export_guidance import cosmetics_fda
+    text=' '.join(cosmetics_fda('ko')['checklist'])
+    assert '24시간' in text and '제거' in text and '특정 소기업' in text

@@ -12,7 +12,6 @@ from collections import OrderedDict
 from pathlib import Path
 from typing import Literal
 from urllib.parse import urlencode
-import httpx
 
 from fastapi import FastAPI, Request, UploadFile, File, Form, HTTPException, Query
 from fastapi.responses import JSONResponse, RedirectResponse, PlainTextResponse, Response
@@ -229,22 +228,19 @@ async def translate_official(payload: OfficialTranslationPayload, request: Reque
         raise HTTPException(422, 'Unsupported document or language.')
     if not translation_configured():
         raise TranslationError('Translation is not configured.', 503)
-    # Only reviewed fixed file URLs. No caller-supplied URL or redirects.
-    try:
-        async with httpx.AsyncClient(timeout=10, follow_redirects=False) as client:
-            async with client.stream('GET', document['url']) as response:
-                response.raise_for_status()
-                content = bytearray()
-                async for chunk in response.aiter_bytes():
-                    content.extend(chunk)
-                    if len(content) > MAX_FILE_BYTES:
-                        raise TranslationError('Document exceeds the 2 MB limit.', 413)
-        text = await asyncio.to_thread(extract_text, 'official.pdf', bytes(content))
-        translated = await translate(text, 'en', payload.target_lang)
-        return {**translated, 'original_url': document['url']}
-    except httpx.HTTPError as exc:
-        raise TranslationError('공식 서류를 가져오지 못했습니다. 원본 파일 링크를 이용해 주세요.' if payload.target_lang == 'ko' else
-                               'The official file could not be retrieved. Use the original file link.', 503) from exc
+    # Reviewed public text snapshots avoid upstream blocking from deployment hosts.
+    # The source URL, review date and PDF hash identify the exact version being translated.
+    snapshots = json.loads((ROOT / 'engine/official_form_text.json').read_text(encoding='utf-8'))
+    snapshot = snapshots[payload.document_id]
+    if len(snapshot['text']) > 12000:
+        raise TranslationError('이 문서는 12,000자를 초과합니다. 원본에서 필요한 부분을 복사해 문서 번역에서 나눠 번역해 주세요.' if payload.target_lang == 'ko' else
+                               'This document exceeds 12,000 characters. Translate selected sections in the document translation tool.', 413)
+    translated = await translate(snapshot['text'], 'en', payload.target_lang)
+    version_note = (' 원문은 '+snapshot['reviewed_at']+' 확인본입니다. 제출 전 원본 링크의 최신 개정 여부를 확인하세요.' if payload.target_lang == 'ko' else
+                    ' Source snapshot reviewed '+snapshot['reviewed_at']+'. Check the original link for revisions before submission.')
+    return {**translated, 'message': translated['message'] + version_note,
+            'original_url': document['url'], 'source_reviewed_at': snapshot['reviewed_at'], 'source_sha256': snapshot['sha256']}
+
 
 
 @app.post('/api/audit/diagnose')
@@ -264,9 +260,9 @@ async def export_checklist(request: Request, category: str = 'PHARMA', country: 
         raise HTTPException(422, 'Choose a supported product category and jurisdiction.')
     domains = {'PHARMA': 'Pharmaceuticals', 'COSMETIC': 'Cosmetics', 'DEVICE': 'Medical Devices',
                'SANITIZER': 'Chemicals', 'FOOD': 'Food Safety', 'CHEMICAL': 'Chemicals'}
-    if category == 'DEVICE' and country == 'EMA':
-        from engine.export_guidance import device_eu
-        guide = device_eu(lang)
+    if (category, country) in {('DEVICE', 'EMA'), ('COSMETIC', 'FDA')}:
+        from engine.export_guidance import device_eu, cosmetics_fda
+        guide = device_eu(lang) if category == 'DEVICE' else cosmetics_fda(lang)
         if lang not in ('en', 'ko'):
             translated = await translate('\n\n'.join([guide['message']] + guide['checklist']), 'en', lang)
             guide['message'] = translated['translated_text']

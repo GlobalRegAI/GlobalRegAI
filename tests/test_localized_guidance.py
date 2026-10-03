@@ -49,3 +49,10 @@ def test_groq_translation_rejects_truncation_and_number_changes(monkeypatch,fini
     else:
         with pytest.raises(translation.TranslationError):
             asyncio.run(translation.translate('Submit 10 records.','en','ko'))
+
+
+def test_official_translation_rejects_arbitrary_urls_and_missing_consent():
+    web.LIMITS.clear()
+    with TestClient(web.app) as client:
+        assert client.post('/api/translate-official',json={'document_id':'fda-356h'}).status_code == 400
+        assert client.post('/api/translate-official',json={'document_id':'https://localhost/private','consent':True}).status_code == 422

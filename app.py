@@ -12,6 +12,7 @@ from collections import OrderedDict
 from pathlib import Path
 from typing import Literal
 from urllib.parse import urlencode
+import httpx
 
 from fastapi import FastAPI, Request, UploadFile, File, Form, HTTPException, Query
 from fastapi.responses import JSONResponse, RedirectResponse, PlainTextResponse, Response
@@ -72,6 +73,12 @@ class SearchPayload(BaseModel):
 class TranslatePayload(BaseModel):
     text: str = Field(min_length=1, max_length=12000)
     source_lang: str = 'auto'
+    target_lang: str = 'ko'
+    consent: bool = False
+
+
+class OfficialTranslationPayload(BaseModel):
+    document_id: str = Field(max_length=60)
     target_lang: str = 'ko'
     consent: bool = False
 
@@ -208,6 +215,36 @@ async def translate_file(request: Request, file: UploadFile = File(...), source_
     text = await asyncio.to_thread(extract_text, file.filename, content)
     result = await translate(text, source_lang.lower(), target_lang.lower())
     return {**result, 'file_name': file.filename, 'total_characters': len(text), 'translated_content': result['translated_text']}
+
+
+@app.post('/api/translate-official')
+async def translate_official(payload: OfficialTranslationPayload, request: Request):
+    from engine.document_catalogue import FORMS, form_documents
+    throttle(request, 'translation', 10)
+    if not payload.consent:
+        raise HTTPException(400, 'Translation provider consent is required.')
+    documents = {doc['id']: doc for number in FORMS for doc in form_documents(number, 'en')}
+    document = documents.get(payload.document_id)
+    if not document or payload.target_lang not in regulatory_search.LANGUAGES:
+        raise HTTPException(422, 'Unsupported document or language.')
+    if not translation_configured():
+        raise TranslationError('Translation is not configured.', 503)
+    # Only reviewed fixed file URLs. No caller-supplied URL or redirects.
+    try:
+        async with httpx.AsyncClient(timeout=10, follow_redirects=False) as client:
+            async with client.stream('GET', document['url']) as response:
+                response.raise_for_status()
+                content = bytearray()
+                async for chunk in response.aiter_bytes():
+                    content.extend(chunk)
+                    if len(content) > MAX_FILE_BYTES:
+                        raise TranslationError('Document exceeds the 2 MB limit.', 413)
+        text = await asyncio.to_thread(extract_text, 'official.pdf', bytes(content))
+        translated = await translate(text, 'en', payload.target_lang)
+        return {**translated, 'original_url': document['url']}
+    except httpx.HTTPError as exc:
+        raise TranslationError('공식 서류를 가져오지 못했습니다. 원본 파일 링크를 이용해 주세요.' if payload.target_lang == 'ko' else
+                               'The official file could not be retrieved. Use the original file link.', 503) from exc
 
 
 @app.post('/api/audit/diagnose')

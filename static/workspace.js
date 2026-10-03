@@ -94,6 +94,23 @@ function renderSources(target, sources) {
     if (source.excerpt) card.append(originalQuote(source.excerpt));
     if (source.retrieved_at) card.append(node('p', (initialLang === 'ko' ? '조회: ' : 'Retrieved: ')+new Date(source.retrieved_at).toLocaleString(), 'source-meta'));
     card.append(node('p', 'Effective date: not independently verified', 'source-meta'));
+    if (source.format === 'PDF' && /^fda-(356h|1571)(-instructions)?$/.test(source.id)) {
+      const consentLabel = node('label', undefined, 'checkbox');
+      const consent = node('input'); consent.type = 'checkbox';
+      consentLabel.append(consent, node('span', initialLang === 'ko' ? '공개 원문을 설정된 번역 제공자(DeepL 또는 Groq)로 전송하는 데 동의합니다.' : 'Send this public document to the configured translation provider (DeepL or Groq).'));
+      const button = node('button', initialLang === 'ko' ? '이 서류를 한국어로 번역' : 'Translate this document'); button.type = 'button'; button.disabled = true;
+      const result = node('div', undefined, 'answer-text'); result.setAttribute('aria-live','polite');
+      consent.addEventListener('change', () => { button.disabled = !consent.checked; });
+      button.addEventListener('click', async () => {
+        button.disabled = true; consent.disabled = true; result.textContent = tr('Processing your request…');
+        try {
+          const data = await api('/api/translate-official', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({document_id:source.id,target_lang:$('answer-language').value,consent:consent.checked})}, 55000);
+          result.replaceChildren(node('p',data.message,'notice'),node('p',data.translated_text));
+        } catch (error) { showError(result,error); }
+        finally { consent.disabled = false; button.disabled = !consent.checked; }
+      });
+      card.append(consentLabel, button, result);
+    }
     target.append(card);
   }
 }

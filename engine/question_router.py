@@ -1,6 +1,7 @@
 """Deterministic navigation before evidence synthesis. No invented forms or contacts."""
 import re
 from engine import regulatory_search as research
+from engine.document_catalogue import FORMS, form_documents
 
 DOCUMENTS = {
     'FDA': ('FDA — Forms and updates', 'https://www.fda.gov/about-fda/forms/new-and-updated-fda-forms'),
@@ -49,7 +50,8 @@ async def answer(query, domain, region, lang):
         region = mentioned[0]
     contact = bool(re.search(r'\bcontact\b|\bphone\b|\bemail\b|\be-mail\b|담당.*(?:기관|부서)|전화|이메일|상담원|상담예약|기관.*문의', q))
     document = bool(re.search(r'\bdownload\b|\bforms?\b|\bwhere.*(?:document|template)\b|서식|양식|다운로드|서류.*(?:주세요|어디|받|필요)', q))
-    form356h = bool(re.search(r'(?<![a-z0-9])356h(?![a-z0-9])', q))
+    form_match = re.search(r'(?<![a-z0-9])(356h|1571)(?![a-z0-9])', q)
+    form_number = form_match.group(1) if form_match else None
     if re.search(r'how.*(?:complete|fill|apply)|작성.*(?:방법|어떻게)|적용.*(?:여부|되는)', q):
         document = False
     if (contact or document) and len(mentioned) == 1 and region != mentioned[0]:
@@ -57,14 +59,13 @@ async def answer(query, domain, region, lang):
             '질문의 국가와 선택한 국가가 다릅니다. 아래 국가를 선택하거나 질문을 수정해 주세요.' if lang == 'ko' else
             'The question and selected jurisdiction differ. Choose the jurisdiction below or edit the question.', region,
             choices=[dict(label=research.REGIONS[mentioned[0]], target_region=mentioned[0])])
-    if form356h and (document or q.strip() in ('356h', 'fda 356h')):
+    if form_number and (document or q.strip() in (form_number, 'fda '+form_number)):
         if region not in ('ALL', 'FDA'):
-            return result('SCOPE_CONFLICT', 'FDA Form 356h is a US form. Select United States to locate it.', region,
-                          choices=[dict(label='United States', target_region='FDA')])
-        return result('DOCUMENT_LINKS',
-            'FDA 공식 페이지에서 Form 356h의 현재 서식과 개정 안내를 확인하세요. 적용 여부는 별도 확인이 필요합니다.' if lang == 'ko' else
-            'Open the FDA page for Form 356h and revision information. Applicability must be checked separately.',
-            'FDA', [link(DOCUMENTS['FDA'], 'fda-356h')])
+            return result('SCOPE_CONFLICT',
+                          '미국 FDA 서식입니다. 대상 국가를 미국으로 선택해 주세요.' if lang == 'ko' else 'Select United States for this FDA form.', region,
+                          choices=[dict(label='미국' if lang == 'ko' else 'United States', target_region='FDA')])
+        return result('DOCUMENT_LINKS', FORMS[form_number].get(lang, FORMS[form_number]['en']),
+                      'FDA', form_documents(form_number, lang))
     if contact or document:
         if region == 'ALL':
             return clarify(region, lang, mentioned or None)

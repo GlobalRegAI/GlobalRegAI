@@ -32,6 +32,16 @@ function submit(dom, id) {
 }
 async function run(name, callback) { await callback(); passed++; console.log('PASS ' + name); }
 (async () => {
+  await run('Korean medical device context reaches the guide API', async () => {
+    const dom = await environment('/export-intelligence?domain=Medical+Devices&lang=ko&region=EMA', async url => {
+      assert.match(url, /category=DEVICE/); assert.match(url, /country=EMA/); assert.match(url, /lang=ko/);
+      return response({checklist:['기술문서를 준비합니다.'],sources:[],message:'한국어 안내'});
+    });
+    assert.equal(dom.window.document.getElementById('category').value, 'DEVICE');
+    submit(dom, 'export-form'); await complete(dom, 'export-results');
+    assert.match(dom.window.document.getElementById('export-results').textContent, /기술문서/);
+    dom.window.close();
+  });
   await run('Question submits selected scope and renders untrusted text safely', async () => {
     let calls = 0;
     const dom = await environment('/?domain=Standards%20%26%20QMS&lang=ko&region=FDA', async (url, options) => {

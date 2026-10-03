@@ -23,7 +23,7 @@ from engine import regulatory_search
 from engine import ai_config
 from engine import question_router
 from engine.audit_engine import audit_engine, PRODUCT_CATEGORIES
-from certification.translation_service import extract_text, translate, TranslationError, MAX_FILE_BYTES
+from certification.translation_service import extract_text, translate, TranslationError, MAX_FILE_BYTES, configured as translation_configured
 
 ROOT = Path(__file__).resolve().parent
 app = FastAPI(title='GlobalRegAI', version='15.0.0')
@@ -72,6 +72,12 @@ class SearchPayload(BaseModel):
 class TranslatePayload(BaseModel):
     text: str = Field(min_length=1, max_length=12000)
     source_lang: str = 'auto'
+    target_lang: str = 'ko'
+    consent: bool = False
+
+
+class OfficialTranslationPayload(BaseModel):
+    document_id: str = Field(max_length=60)
     target_lang: str = 'ko'
     consent: bool = False
 
@@ -168,7 +174,7 @@ async def translation_failure(request, exc):
 def health():
     return {'status': 'OK', 'version': app.version, 'capabilities': {
         'answer_synthesis': 'CONFIGURED_NOT_PROBED' if ai_config.configured() else 'NOT_CONFIGURED',
-        'translation': 'CONFIGURED_NOT_PROBED' if os.getenv('DEEPL_API_KEY') else 'NOT_CONFIGURED',
+        'translation': 'CONFIGURED_NOT_PROBED' if translation_configured() else 'NOT_CONFIGURED',
         'official_source_count': len(regulatory_search.SOURCES), 'vault': 'NOT_CONNECTED',
         'browser_agent': 'NOT_CONNECTED'}}
 
@@ -201,13 +207,40 @@ async def translate_file(request: Request, file: UploadFile = File(...), source_
     throttle(request, 'translation', 10)
     if not consent:
         raise HTTPException(400, 'Confirm that extracted text may be sent to the translation provider.')
-    if not os.getenv('DEEPL_API_KEY'):
+    if not translation_configured():
         raise TranslationError('Translation is not configured. No document was sent to a provider.', 503)
     content = await file.read(MAX_FILE_BYTES + 1)
     await file.close()
     text = await asyncio.to_thread(extract_text, file.filename, content)
     result = await translate(text, source_lang.lower(), target_lang.lower())
     return {**result, 'file_name': file.filename, 'total_characters': len(text), 'translated_content': result['translated_text']}
+
+
+@app.post('/api/translate-official')
+async def translate_official(payload: OfficialTranslationPayload, request: Request):
+    from engine.document_catalogue import FORMS, form_documents
+    throttle(request, 'translation', 10)
+    if not payload.consent:
+        raise HTTPException(400, 'Translation provider consent is required.')
+    documents = {doc['id']: doc for number in FORMS for doc in form_documents(number, 'en')}
+    document = documents.get(payload.document_id)
+    if not document or payload.target_lang not in regulatory_search.LANGUAGES:
+        raise HTTPException(422, 'Unsupported document or language.')
+    if not translation_configured():
+        raise TranslationError('Translation is not configured.', 503)
+    # Reviewed public text snapshots avoid upstream blocking from deployment hosts.
+    # The source URL, review date and PDF hash identify the exact version being translated.
+    snapshots = json.loads((ROOT / 'engine/official_form_text.json').read_text(encoding='utf-8'))
+    snapshot = snapshots[payload.document_id]
+    if len(snapshot['text']) > 12000:
+        raise TranslationError('이 문서는 12,000자를 초과합니다. 원본에서 필요한 부분을 복사해 문서 번역에서 나눠 번역해 주세요.' if payload.target_lang == 'ko' else
+                               'This document exceeds 12,000 characters. Translate selected sections in the document translation tool.', 413)
+    translated = await translate(snapshot['text'], 'en', payload.target_lang)
+    version_note = (' 원문은 '+snapshot['reviewed_at']+' 확인본입니다. 제출 전 원본 링크의 최신 개정 여부를 확인하세요.' if payload.target_lang == 'ko' else
+                    ' Source snapshot reviewed '+snapshot['reviewed_at']+'. Check the original link for revisions before submission.')
+    return {**translated, 'message': translated['message'] + version_note,
+            'original_url': document['url'], 'source_reviewed_at': snapshot['reviewed_at'], 'source_sha256': snapshot['sha256']}
+
 
 
 @app.post('/api/audit/diagnose')
@@ -219,22 +252,34 @@ def audit_api(payload: AuditPayload):
 
 
 @app.get('/api/export/checklist')
-def export_checklist(category: str = 'PHARMA', country: str = 'FDA'):
+async def export_checklist(request: Request, category: str = 'PHARMA', country: str = 'FDA', lang: str = 'en'):
+    throttle(request, 'export', 15)
+    if lang not in regulatory_search.LANGUAGES:
+        raise HTTPException(422, 'Unsupported language.')
     if category not in PRODUCT_CATEGORIES or country not in regulatory_search.REGIONS or country == 'ALL':
         raise HTTPException(422, 'Choose a supported product category and jurisdiction.')
     domains = {'PHARMA': 'Pharmaceuticals', 'COSMETIC': 'Cosmetics', 'DEVICE': 'Medical Devices',
                'SANITIZER': 'Chemicals', 'FOOD': 'Food Safety', 'CHEMICAL': 'Chemicals'}
-    prompts = {
-        'PHARMA': ['Confirm medicinal-product classification and authorisation route.', 'Identify applicable manufacturing, quality and submission evidence.'],
-        'COSMETIC': ['Check intended use and claims against the local cosmetic definition.', 'Determine applicable responsible-person, registration, listing, safety and labelling duties.'],
-        'DEVICE': ['Determine intended purpose, classification and market-access route.', 'Identify applicable quality-system, technical-documentation and post-market obligations.'],
-        'SANITIZER': ['Determine whether claims trigger biocide, medicinal, cosmetic or other classification.', 'Review authorisation and active-substance requirements for that classification.'],
-        'FOOD': ['Determine food, supplement or novel-food classification.', 'Review ingredient, labelling, safety and importer obligations.'],
-        'CHEMICAL': ['Determine substance or mixture classification and intended uses.', 'Review registration, safety-data-sheet and labelling obligations.']}
+    if (category, country) in {('DEVICE', 'EMA'), ('COSMETIC', 'FDA')}:
+        from engine.export_guidance import device_eu, cosmetics_fda
+        guide = device_eu(lang) if category == 'DEVICE' else cosmetics_fda(lang)
+        if lang not in ('en', 'ko'):
+            translated = await translate('\n\n'.join([guide['message']] + guide['checklist']), 'en', lang)
+            guide['message'] = translated['translated_text']
+            guide['checklist'] = []
+        return guide
+    query = (f"Explain practical export preparation for {domains[category]} in {regulatory_search.REGIONS[country]}. "
+             "Explain requirements, exceptions, required documents and next steps, not just questions or links.")
+    answer = await regulatory_search.search(query, domains[category], country, lang)
+    if answer.get('claims'):
+        return {'status': 'PLANNING_ONLY', 'product_category': category, 'target_country': country,
+                'checklist': [], 'claims': answer['claims'], 'sources': answer.get('sources', []),
+                'message': answer.get('message', ''), 'interpretation_verified': False}
     return {'status': 'PLANNING_ONLY', 'product_category': category, 'target_country': country,
-            'checklist': prompts[category] + ['Record the official source, effective date, evidence owner and unresolved questions for each applicable requirement.'],
-            'sources': regulatory_search.select_sources('', domains[category], country),
-            'message': 'Planning questions, not a complete regulatory checklist or confirmation of market eligibility.'}
+            'checklist': [], 'sources': answer.get('sources', []),
+            'message': ('현재 이 국가·제품에 대한 설명을 작성할 공식 근거 또는 AI 응답을 확보하지 못했습니다. 규제 질문에서 제품명·사용 목적·필요한 서류를 구체적으로 입력해 주세요. 일반 질문 목록을 실제 요건처럼 제시하지 않습니다.' if lang == 'ko' else
+                        'A source-grounded explanation could not be completed for this product and market. Ask a specific research question including intended use and required documents. No complete requirements or eligibility determination is available.')}
+
 
 
 @app.get('/api/export/ingredient')
@@ -313,13 +358,14 @@ def page(request: Request, domain: str = 'Pharmaceuticals', lang: str = 'en'):
     if domain not in regulatory_search.DOMAINS or lang not in regulatory_search.LANGUAGES:
         raise HTTPException(422, 'Unsupported domain or language. Return to the homepage and choose from the available options.')
     active, title = PAGES[request.url.path]
+    ui = json.loads((ROOT / 'static/ko.json').read_text(encoding='utf-8')) if lang == 'ko' else {}
     return templates.TemplateResponse(request=request, name='workspace.html', context={
-        'active': active, 'title': title, 'domain': domain, 'lang': lang,
+        'ui': ui, 'tr': lambda text: ui.get(text, text), 'active': active, 'title': title, 'domain': domain, 'lang': lang,
         'domains': regulatory_search.DOMAINS, 'regions': regulatory_search.REGIONS,
         'languages': regulatory_search.LANGUAGES, 'pages': PAGES,
         'page_url': lambda path, d=domain: path+'?'+urlencode({'domain': d, 'lang': lang}),
         'authenticated': authenticated(request), 'admin_configured': admin_configured(),
-        'ai_configured': ai_config.configured(), 'translation_configured': bool(os.getenv('DEEPL_API_KEY')),
+        'ai_configured': ai_config.configured(), 'translation_configured': translation_configured(),
         'sources': regulatory_search.SOURCES})
 
 

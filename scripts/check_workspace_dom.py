@@ -12,7 +12,7 @@ from fastapi.testclient import TestClient
 from app import app
 
 routes = ['/?domain=Standards%20%26%20QMS&lang=ko&region=FDA', '/',
-          '/?domain=Animal%20%26%20Veterinary&lang=ja', '/gmp-core', '/export-intelligence']
+          '/?domain=Animal%20%26%20Veterinary&lang=ja', '/gmp-core', '/export-intelligence', '/export-intelligence?domain=Medical+Devices&lang=ko&region=EMA']
 with TestClient(app) as client, tempfile.TemporaryDirectory() as temporary:
     fixtures = {}
     for route in routes:

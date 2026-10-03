@@ -1,5 +1,7 @@
 'use strict';
 const $ = (id) => document.getElementById(id);
+const ui = JSON.parse(document.body.dataset.ui || '{}');
+const tr = text => ui[text] || text;
 const page = document.body.dataset.page;
 const domain = document.body.dataset.domain;
 const initialLang = document.body.dataset.lang;
@@ -25,7 +27,7 @@ function syncToolRegions() {
   for (const select of toolRegions) {
     if (![...select.options].some(option => option.value === 'ALL')) {
       const placeholder = document.createElement('option');
-      placeholder.value = 'ALL'; placeholder.textContent = 'Choose a jurisdiction';
+      placeholder.value = 'ALL'; placeholder.textContent = tr('Choose a jurisdiction');
       placeholder.disabled = true; select.prepend(placeholder);
     }
     select.value = region.value;
@@ -36,11 +38,22 @@ for (const select of toolRegions) select.addEventListener('change', () => {
 });
 region.addEventListener('change', syncToolRegions);
 syncToolRegions();
-$('answer-language').addEventListener('change', retainContext);
+$('answer-language').addEventListener('change', () => { retainContext(); location.reload(); });
 retainContext();
+if ($('category')) {
+  const categories = {'Pharmaceuticals':'PHARMA','Medical Devices':'DEVICE','Cosmetics':'COSMETIC','Food Safety':'FOOD','Chemicals':'CHEMICAL'};
+  $('category').value = [...$('category').options].some(item => item.value === queryParams.get('category')) ? queryParams.get('category') : (categories[domain] || 'PHARMA');
+  $('category').addEventListener('change', () => {
+    const url = new URL(location.href);
+    const selected = $('category').value;
+    url.searchParams.set('category', selected);
+    url.searchParams.set('domain', Object.keys(categories).find(key => categories[key] === selected) || 'Chemicals');
+    location.href = url.toString();
+  });
+}
 const node = (tag, text, className) => {
   const element = document.createElement(tag);
-  if (text !== undefined) element.textContent = text;
+  if (text !== undefined) element.textContent = tr(text);
   if (className) element.className = className;
   return element;
 };
@@ -56,7 +69,7 @@ async function api(path, options = {}, timeout = 35000) {
     }
     return data;
   } catch (error) {
-    if (error.name === 'AbortError') throw new Error('The request timed out. No result was confirmed. Please retry.');
+    if (error.name === 'AbortError') throw new Error(tr('The request timed out. No result was confirmed. Please retry.'));
     throw error;
   } finally { clearTimeout(timer); }
 }
@@ -73,17 +86,38 @@ function sourceLink(source) {
   } catch (_) { return node('span', source.title); }
   return link;
 }
+function originalQuote(text) {
+  const details = node('details'); details.append(node('summary', initialLang === 'ko' ? '원문 근거 확인' : 'View original evidence'), node('blockquote', text)); return details;
+}
 function renderSources(target, sources) {
   if (!sources.length) return;
   target.append(node('h3', 'Official sources'));
   for (const source of sources) {
     const card = node('div', undefined, 'source-card');
     card.append(sourceLink(source));
+    if (source.format) card.append(node('p', source.format + (initialLang === 'ko' ? ' 원본 파일 · 번역본 아님' : ' original file'), 'source-meta'));
     if (source.retrieval_status) card.append(node('p', source.retrieval_status === 'RETRIEVED' ? 'Retrieved for this request' : 'Official navigation link — open the page to check current information', 'source-meta'));
-    if (source.catalogue_reviewed_at) card.append(node('p', 'Directory reviewed: '+source.catalogue_reviewed_at, 'source-meta'));
-    if (source.excerpt) card.append(node('blockquote', source.excerpt));
-    if (source.retrieved_at) card.append(node('p', 'Retrieved: '+new Date(source.retrieved_at).toLocaleString(), 'source-meta'));
+    if (source.catalogue_reviewed_at) card.append(node('p', (initialLang === 'ko' ? '링크 확인일: ' : 'Directory reviewed: ')+source.catalogue_reviewed_at, 'source-meta'));
+    if (source.excerpt) card.append(originalQuote(source.excerpt));
+    if (source.retrieved_at) card.append(node('p', (initialLang === 'ko' ? '조회: ' : 'Retrieved: ')+new Date(source.retrieved_at).toLocaleString(), 'source-meta'));
     card.append(node('p', 'Effective date: not independently verified', 'source-meta'));
+    if (source.format === 'PDF' && /^fda-(356h|1571)(-instructions)?$/.test(source.id)) {
+      const consentLabel = node('label', undefined, 'checkbox');
+      const consent = node('input'); consent.type = 'checkbox';
+      consentLabel.append(consent, node('span', initialLang === 'ko' ? '확인일 기준 공개 원문을 번역 제공자(DeepL 또는 Groq)로 전송하는 데 동의합니다.' : 'Send the reviewed public document snapshot to the translation provider (DeepL or Groq).'));
+      const button = node('button', initialLang === 'ko' ? '이 서류를 한국어로 번역' : 'Translate this document'); button.type = 'button'; button.disabled = true;
+      const result = node('div', undefined, 'answer-text'); result.setAttribute('aria-live','polite');
+      consent.addEventListener('change', () => { button.disabled = !consent.checked; });
+      button.addEventListener('click', async () => {
+        button.disabled = true; consent.disabled = true; result.textContent = tr('Processing your request…');
+        try {
+          const data = await api('/api/translate-official', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({document_id:source.id,target_lang:$('answer-language').value,consent:consent.checked})}, 55000);
+          result.replaceChildren(node('p',data.message,'notice'),node('p',data.translated_text));
+        } catch (error) { showError(result,error); }
+        finally { consent.disabled = false; button.disabled = !consent.checked; }
+      });
+      card.append(consentLabel, button, result);
+    }
     target.append(card);
   }
 }
@@ -96,7 +130,7 @@ function bindForm(id, targetId, callback) {
     if (busy) return;
     const target = $(targetId), button = form.querySelector('button[type="submit"]');
     const label = button.textContent;
-    busy = true; button.disabled = true; button.textContent = 'Working…';
+    busy = true; button.disabled = true; button.textContent = tr('Working…');
     target.setAttribute('aria-busy', 'true');
     target.replaceChildren(node('p', 'Processing your request…', 'loading'));
     try { await callback(target); }
@@ -115,7 +149,7 @@ bindForm('question-form', 'research-results', async target => {
   }
   for (const claim of data.claims || []) {
     const block = node('div', undefined, 'claim');
-    block.append(node('p', claim.statement, 'answer-text'), node('blockquote', claim.quote));
+    block.append(node('p', claim.statement, 'answer-text'), originalQuote(claim.quote));
     const source = (data.sources || []).find(item => item.id === claim.source_id);
     if (source) block.append(sourceLink(source));
     card.append(block);
@@ -144,22 +178,27 @@ bindForm('audit-form','audit-results', async target => {
   for (const check of data.checks) target.append(node('h3',check.topic),node('p',check.action));
 });
 bindForm('export-form','export-results', async target => {
-  if ($('export-region').value === 'ALL') throw new Error('Choose a target market before preparing planning questions.');
-  const params = new URLSearchParams({category:$('category').value,country:$('export-region').value});
+  if ($('export-region').value === 'ALL') throw new Error(tr('Choose a target market before preparing planning questions.'));
+  const params = new URLSearchParams({category:$('category').value,country:$('export-region').value,lang:$('answer-language').value});
   const data = await api('/api/export/checklist?'+params);
   target.replaceChildren(node('span','Planning only','status-label'),node('h2','Questions to resolve'),node('p',data.message));
   const list = node('ol'); data.checklist.forEach(text => list.append(node('li',text))); target.append(list);
+  for (const claim of data.claims || []) {
+    target.append(node('p',claim.statement,'answer-text'), originalQuote(claim.quote));
+    const source = (data.sources || []).find(item => item.id === claim.source_id);
+    if (source) target.append(sourceLink(source));
+  }
   renderSources(target,data.sources || []);
   if (!data.sources.length) target.append(node('p','This jurisdiction is not yet covered by the official-source catalogue.','notice'));
 });
 bindForm('translation-form','translation-results', async target => {
   const file = $('translation-file').files[0];
   const text = $('translation-text').value;
-  if (file && text.trim()) throw new Error('Choose a file or pasted text, not both.');
-  if (!file && !text.trim()) throw new Error('Paste text or select a document.');
+  if (file && text.trim()) throw new Error(tr('Choose a file or pasted text, not both.'));
+  if (!file && !text.trim()) throw new Error(tr('Paste text or select a document.'));
   let data;
   if (file) {
-    if (file.size > 2*1024*1024) throw new Error('The document exceeds the 2 MB limit.');
+    if (file.size > 2*1024*1024) throw new Error(tr('The document exceeds the 2 MB limit.'));
     const form = new FormData();
     form.append('file',file); form.append('source_lang',$('source-language').value); form.append('target_lang',$('target-language').value);
     form.append('consent', String($('translation-consent').checked));

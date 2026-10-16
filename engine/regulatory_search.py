@@ -14,7 +14,7 @@ from pypdf import PdfReader
 from engine.ai_config import groq_key
 
 DOMAINS = ('Pharmaceuticals', 'Medical Devices', 'Cosmetics', 'Food Safety', 'Chemicals',
-           'Animal & Veterinary', 'Standards & QMS', 'Certification')
+           'Animal & Veterinary', 'Plants & Phytosanitary', 'Standards & QMS', 'Certification')
 REGIONS = {'ALL': 'All jurisdictions', 'FDA': 'United States', 'EMA': 'European Union',
            'MFDS': 'South Korea', 'PMDA': 'Japan', 'NMPA': 'China', 'MHRA': 'United Kingdom'}
 LANGUAGES = {'en': 'English', 'ko': '한국어', 'ja': '日本語', 'zh': '中文', 'de': 'Deutsch', 'fr': 'Français', 'es': 'Español'}
@@ -56,6 +56,11 @@ SOURCES.append(dict(id='fda-qmsr', title='FDA — Quality Management System Regu
     domains=['Medical Devices', 'Standards & QMS', 'Certification'],
     keywords=['qmsr', 'qsit', '13485', 'quality management', '품질경영'],
     url='https://www.fda.gov/medical-devices/postmarket-requirements-devices/quality-management-system-regulation-qmsr'))
+
+
+from engine.regulatory_catalogue import EXTRA_REGIONS, sources as additional_sources
+REGIONS.update(EXTRA_REGIONS)
+SOURCES.extend(additional_sources())
 
 
 def now():
@@ -197,9 +202,9 @@ async def search(query, domain, region, lang):
                 return {**source, 'retrieval_status': 'UNAVAILABLE', 'retrieved_at': None, 'effective_date': None}
         fetched = await asyncio.gather(*(bounded(s) for s in candidates))
         result['sources'] = [public_source(s, query) for s in fetched]
-        evidence = [s for s in fetched if s.get('text')]
+        evidence = [s for s in fetched if s.get('text') and s.get('document_type') != 'document_index']
         if not evidence:
-            result.update(status='SOURCE_UNAVAILABLE', message='Official sources could not be retrieved. Links are provided for manual review; no answer was generated.')
+            result.update(status='SOURCE_UNAVAILABLE', message='No substantive source text is available. A document index or unavailable page cannot establish legal requirements.')
             return result
         key = groq_key()
         result.update(status='SOURCES_ONLY', message='Official-source excerpts are available. AI synthesis is not configured; review the linked documents.')

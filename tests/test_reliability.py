@@ -47,7 +47,7 @@ def test_routes_are_rendered_and_protected_against_inline_script(client, path):
 
 
 def test_ampersand_domains_round_trip(client):
-    soup = BeautifulSoup(client.get('/').text, 'html.parser')
+    soup = BeautifulSoup(client.get('/gmp-core').text, 'html.parser')
     for domain in ('Standards & QMS','Animal & Veterinary'):
         link = soup.find('a', string=domain)
         assert parse_qs(urlsplit(link['href']).query)['domain'] == [domain]

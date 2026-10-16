@@ -22,11 +22,12 @@ from pydantic import BaseModel, Field, field_validator
 from engine import regulatory_search
 from engine import ai_config
 from engine import question_router
+from engine import conversation
 from engine.audit_engine import audit_engine, PRODUCT_CATEGORIES
 from certification.translation_service import extract_text, translate, TranslationError, MAX_FILE_BYTES
 
 ROOT = Path(__file__).resolve().parent
-app = FastAPI(title='GlobalRegAI', version='15.0.0')
+app = FastAPI(title='GlobalRegAI', version='16.0.0')
 app.mount('/static', StaticFiles(directory=ROOT / 'static'), name='static')
 templates = Jinja2Templates(directory=ROOT / 'templates')
 LOG = logging.getLogger('globalregai')
@@ -173,6 +174,19 @@ def health():
         'browser_agent': 'NOT_CONNECTED'}}
 
 
+@app.post('/api/conversation')
+async def conversation_api(payload: conversation.ConversationPayload, request: Request):
+    throttle(request, 'search', 15)
+    return await conversation.answer(payload)
+
+
+@app.get('/api/coverage')
+def coverage_api():
+    return {'coverage': 'partial', 'change_monitoring': 'not_connected',
+            'sources': [{k:v for k,v in s.items() if k not in ('keywords',)} for s in regulatory_search.SOURCES],
+            'iso_full_text': 'licence_required_not_ingested'}
+
+
 @app.post('/api/search')
 async def search_api(payload: SearchPayload, request: Request):
     throttle(request, 'search', 30)
@@ -313,7 +327,7 @@ def page(request: Request, domain: str = 'Pharmaceuticals', lang: str = 'en'):
     if domain not in regulatory_search.DOMAINS or lang not in regulatory_search.LANGUAGES:
         raise HTTPException(422, 'Unsupported domain or language. Return to the homepage and choose from the available options.')
     active, title = PAGES[request.url.path]
-    return templates.TemplateResponse(request=request, name='workspace.html', context={
+    return templates.TemplateResponse(request=request, name='search.html' if active == 'qa' else 'workspace.html', context={
         'active': active, 'title': title, 'domain': domain, 'lang': lang,
         'domains': regulatory_search.DOMAINS, 'regions': regulatory_search.REGIONS,
         'languages': regulatory_search.LANGUAGES, 'pages': PAGES,

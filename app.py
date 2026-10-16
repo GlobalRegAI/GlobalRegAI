@@ -23,11 +23,13 @@ from engine import regulatory_search
 from engine import ai_config
 from engine import question_router
 from engine import conversation
+from certification.file_reader import extract_upload, MAX_UPLOAD
+from certification.file_translation import ChunkPayload, ExportPayload, translate_chunk, export_translation
 from engine.audit_engine import audit_engine, PRODUCT_CATEGORIES
 from certification.translation_service import extract_text, translate, TranslationError, MAX_FILE_BYTES
 
 ROOT = Path(__file__).resolve().parent
-app = FastAPI(title='GlobalRegAI', version='16.0.0')
+app = FastAPI(title='GlobalRegAI', version='17.0.0')
 app.mount('/static', StaticFiles(directory=ROOT / 'static'), name='static')
 templates = Jinja2Templates(directory=ROOT / 'templates')
 LOG = logging.getLogger('globalregai')
@@ -144,7 +146,7 @@ async def response_guards(request, call_next):
         length = int(request.headers.get('content-length', '0'))
     except ValueError:
         return JSONResponse({'status': 'ERROR', 'message': 'Invalid content length.'}, status_code=400)
-    if length > MAX_FILE_BYTES + 65536:
+    if length > (MAX_UPLOAD if request.url.path.startswith('/api/files/') else MAX_FILE_BYTES) + 65536:
         return JSONResponse({'status': 'ERROR', 'message': 'Request is too large.'}, status_code=413)
     try:
         response = await call_next(request)
@@ -169,6 +171,7 @@ async def translation_failure(request, exc):
 def health():
     return {'status': 'OK', 'version': app.version, 'capabilities': {
         'answer_synthesis': 'CONFIGURED_NOT_PROBED' if ai_config.configured() else 'NOT_CONFIGURED',
+        'file_translation': 'CONFIGURED_NOT_PROBED' if ai_config.configured() else 'NOT_CONFIGURED',
         'translation': 'CONFIGURED_NOT_PROBED' if os.getenv('DEEPL_API_KEY') else 'NOT_CONFIGURED',
         'official_source_count': len(regulatory_search.SOURCES), 'vault': 'NOT_CONNECTED',
         'browser_agent': 'NOT_CONNECTED'}}
@@ -185,6 +188,28 @@ def coverage_api():
     return {'coverage': 'partial', 'change_monitoring': 'not_connected',
             'sources': [{k:v for k,v in s.items() if k not in ('keywords',)} for s in regulatory_search.SOURCES],
             'iso_full_text': 'licence_required_not_ingested'}
+
+
+@app.post('/api/files/extract')
+async def file_extract(request: Request, file: UploadFile = File(...)):
+    throttle(request, 'file_extract', 20)
+    content = await file.read(MAX_UPLOAD + 1)
+    await file.close()
+    return await asyncio.to_thread(extract_upload, file.filename, content)
+
+
+@app.post('/api/files/translate')
+async def file_translate(payload: ChunkPayload, request: Request):
+    throttle(request, 'file_translation', 40)
+    return await translate_chunk(payload)
+
+
+@app.post('/api/files/export')
+async def file_export(payload: ExportPayload, request: Request):
+    throttle(request, 'file_export', 10)
+    content, mime = await asyncio.to_thread(export_translation, payload)
+    return Response(content=content, media_type=mime, headers={
+        'Content-Disposition': 'attachment; filename="GlobalRegAI-translation.' + payload.format + '"'})
 
 
 @app.post('/api/search')
@@ -327,6 +352,8 @@ def page(request: Request, domain: str = 'Pharmaceuticals', lang: str = 'en'):
     if domain not in regulatory_search.DOMAINS or lang not in regulatory_search.LANGUAGES:
         raise HTTPException(422, 'Unsupported domain or language. Return to the homepage and choose from the available options.')
     active, title = PAGES[request.url.path]
+    if active == 'translation':
+        return RedirectResponse('/?' + urlencode({'translate': '1', 'lang': lang}))
     return templates.TemplateResponse(request=request, name='search.html' if active == 'qa' else 'workspace.html', context={
         'active': active, 'title': title, 'domain': domain, 'lang': lang,
         'domains': regulatory_search.DOMAINS, 'regions': regulatory_search.REGIONS,
